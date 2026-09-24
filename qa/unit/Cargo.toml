@@ -1,0 +1,14 @@
+[package]
+name = "qa-unit"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+syntropctl-core = { path = "../../crates/syntropctl-core" }
+syntropctl-cli = { path = "../../crates/syntropctl-cli" }
+tokio = { workspace = true, features = ["full"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+tempfile = "3.10"
