@@ -35,7 +35,14 @@ impl DaemonEndpoint {
                 return PathBuf::from(val);
             }
         }
-        PathBuf::from(self.default_socket)
+        let default_path = PathBuf::from(self.default_socket);
+        if !default_path.exists() && self.kind == DaemonKind::Inferenced {
+            let alt = PathBuf::from("/run/systemd-inferenced/io.systemd.inferenced1");
+            if alt.exists() {
+                return alt;
+            }
+        }
+        default_path
     }
 
     /// Check if the socket file currently exists on the filesystem.
