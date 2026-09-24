@@ -1,9 +1,13 @@
 [package]
-name = "syntropctl-cli"
+name = "syntropctl"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
+
+[lib]
+name = "syntropctl_cli"
+path = "src/lib.rs"
 
 [[bin]]
 name = "syntropctl"

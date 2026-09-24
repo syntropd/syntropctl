@@ -7,7 +7,7 @@ license.workspace = true
 
 [dependencies]
 syntropctl-core = { path = "../../crates/syntropctl-core" }
-syntropctl-cli = { path = "../../crates/syntropctl-cli" }
+syntropctl-cli = { package = "syntropctl", path = "../../crates/syntropctl-cli" }
 clap.workspace = true
 tokio = { workspace = true, features = ["full"] }
 serde = { workspace = true, features = ["derive"] }
