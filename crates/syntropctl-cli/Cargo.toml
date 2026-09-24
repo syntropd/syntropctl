@@ -4,6 +4,7 @@ version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
+description = "Unified administration and diagnostic CLI for the syntropd AI subsystem suite"
 
 [lib]
 name = "syntropctl_cli"
@@ -14,7 +15,7 @@ name = "syntropctl"
 path = "src/main.rs"
 
 [dependencies]
-syntropctl-core = { path = "../syntropctl-core" }
+syntropctl-core = { version = "0.1.0", path = "../syntropctl-core" }
 clap.workspace = true
 clap_complete.workspace = true
 tokio.workspace = true
