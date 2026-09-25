@@ -44,6 +44,12 @@ mod tests {
         let routerd = DaemonEndpoint::from_name("routerd.service").unwrap();
         assert_eq!(routerd.kind, DaemonKind::Routerd);
 
+        let routerd_pkg = DaemonEndpoint::from_name("syntrop-routerd").unwrap();
+        assert_eq!(routerd_pkg.kind, DaemonKind::Routerd);
+
+        let routerd_case = DaemonEndpoint::from_name("ROUTERD").unwrap();
+        assert_eq!(routerd_case.kind, DaemonKind::Routerd);
+
         let unknown = DaemonEndpoint::from_name("nonexistent_daemon");
         assert!(unknown.is_none());
     }
