@@ -33,7 +33,7 @@ pub async fn execute_sandboxed_tool(
     }
 
     let mut params = serde_json::json!({
-        "command": tool,
+        "name": tool,
         "args": args,
     });
 
@@ -43,16 +43,17 @@ pub async fn execute_sandboxed_tool(
 
     let res = VarlinkClient::call(
         &sock,
-        "io.syntrop.Tool1.Execute",
+        "io.syntrop.Tool1.ExecuteTool",
         Some(params),
         DEFAULT_RPC_TIMEOUT,
     )
     .await?;
 
-    let exit_code = res.get("exit_code").and_then(|v| v.as_i64()).unwrap_or(-1) as i32;
-    let stdout = res.get("stdout").and_then(|v| v.as_str()).unwrap_or("").to_string();
-    let stderr = res.get("stderr").and_then(|v| v.as_str()).unwrap_or("").to_string();
-    let duration_ms = res.get("duration_ms").and_then(|v| v.as_u64()).unwrap_or(0);
+    let inner = res.get("result").unwrap_or(&res);
+    let exit_code = inner.get("exit_code").and_then(|v| v.as_i64()).unwrap_or(-1) as i32;
+    let stdout = inner.get("stdout").and_then(|v| v.as_str()).unwrap_or("").to_string();
+    let stderr = inner.get("stderr").and_then(|v| v.as_str()).unwrap_or("").to_string();
+    let duration_ms = inner.get("duration_ms").and_then(|v| v.as_u64()).unwrap_or(0);
 
     Ok(ToolRunResult {
         exit_code,

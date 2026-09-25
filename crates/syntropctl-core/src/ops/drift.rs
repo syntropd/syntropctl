@@ -28,14 +28,17 @@ pub async fn query_drift(unit: Option<&str>) -> Result<Vec<DriftEvent>, Syntropc
         });
     }
 
-    let params = match unit {
-        Some(u) => serde_json::json!({ "unit": u }),
-        None => serde_json::json!({}),
-    };
+    let mut params = serde_json::json!({
+        "since_seconds": 86400,
+        "limit": 100,
+    });
+    if let Some(u) = unit {
+        params["unit"] = serde_json::json!(u);
+    }
 
     let res = VarlinkClient::call(
         &sock,
-        "io.syntrop.Context1.GetTimeline",
+        "io.syntrop.Context1.ListEvents",
         Some(params),
         DEFAULT_RPC_TIMEOUT,
     )
@@ -44,10 +47,10 @@ pub async fn query_drift(unit: Option<&str>) -> Result<Vec<DriftEvent>, Syntropc
     let mut events = Vec::new();
     if let Some(evs) = res.get("events").and_then(|v| v.as_array()) {
         for e in evs {
-            let path = e.get("path").or_else(|| e.get("target")).and_then(|v| v.as_str()).unwrap_or("/etc").to_string();
-            let ctype = e.get("change_type").or_else(|| e.get("kind")).and_then(|v| v.as_str()).unwrap_or("modified").to_string();
-            let ts = e.get("timestamp").and_then(|v| v.as_u64()).unwrap_or(0);
-            let details = e.get("summary").or_else(|| e.get("details")).and_then(|v| v.as_str()).unwrap_or("").to_string();
+            let path = e.get("unit").and_then(|v| v.as_str()).unwrap_or("-").to_string();
+            let ctype = e.get("source").and_then(|v| v.as_str()).unwrap_or("event").to_string();
+            let ts = e.get("timestamp_us").and_then(|v| v.as_u64()).unwrap_or(0);
+            let details = e.get("summary").and_then(|v| v.as_str()).unwrap_or("").to_string();
 
             events.push(DriftEvent {
                 path,
