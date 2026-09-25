@@ -36,6 +36,12 @@ impl DaemonEndpoint {
             }
         }
         let default_path = PathBuf::from(self.default_socket);
+        if self.kind == DaemonKind::Sentry {
+            let sentry_sock = PathBuf::from("/run/systemd-sentry/sentry.sock");
+            if sentry_sock.exists() {
+                return sentry_sock;
+            }
+        }
         if !default_path.exists() && self.kind == DaemonKind::Inferenced {
             let alt = PathBuf::from("/run/systemd-inferenced/io.systemd.inferenced1");
             if alt.exists() {
