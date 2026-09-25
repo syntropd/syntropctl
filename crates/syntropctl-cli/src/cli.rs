@@ -9,7 +9,7 @@ use clap_complete::Shell;
     name = "syntropctl",
     version,
     about = "Unified administration and diagnostic CLI for the syntropd subsystem",
-    long_about = "Manage, inspect, and execute operations across sentry, inferenced, modeld, contextd, toold, and runtimed."
+    long_about = "Manage, inspect, and execute operations across sentry, inferenced, modeld, contextd, toold, runtimed, and routerd."
 )]
 pub struct Cli {
     /// Format output as JSON instead of tabular plain text.

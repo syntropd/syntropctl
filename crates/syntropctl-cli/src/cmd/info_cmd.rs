@@ -10,7 +10,7 @@ pub async fn handle_info(daemon: Option<String>, json: bool) -> Result<()> {
     match daemon {
         Some(name) => {
             let ep = DaemonEndpoint::from_name(&name).ok_or_else(|| {
-                anyhow::anyhow!("Unknown daemon '{}'. Valid: sentry, inferenced, modeld, contextd, toold, runtimed", name)
+                anyhow::anyhow!("Unknown daemon '{}'. Valid: sentry, inferenced, modeld, contextd, toold, runtimed, routerd", name)
             })?;
             let sock = ep.socket_path();
             if !sock.exists() {

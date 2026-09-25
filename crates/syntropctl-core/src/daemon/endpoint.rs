@@ -13,6 +13,7 @@ pub enum DaemonKind {
     Contextd,
     Toold,
     Runtimed,
+    Routerd,
 }
 
 /// Metadata and socket locator for a syntropd suite daemon.
@@ -72,7 +73,7 @@ impl DaemonEndpoint {
     }
 }
 
-pub static DAEMONS: [DaemonEndpoint; 6] = [
+pub static DAEMONS: [DaemonEndpoint; 7] = [
     DaemonEndpoint {
         kind: DaemonKind::Sentry,
         name: "sentry",
@@ -126,5 +127,14 @@ pub static DAEMONS: [DaemonEndpoint; 6] = [
         env_var: "SYNTROP_RUNTIMED_SOCKET",
         interface: "io.syntrop.Runtime1",
         description: "Headless Neural Model Execution Engine",
+    },
+    DaemonEndpoint {
+        kind: DaemonKind::Routerd,
+        name: "routerd",
+        unit_name: "routerd.service",
+        default_socket: "/run/syntrop/io.syntrop.Router1",
+        env_var: "SYNTROP_ROUTER_SOCKET",
+        interface: "io.syntrop.Router1",
+        description: "Multi-Provider LLM Reverse Proxy & Telemetry Router",
     },
 ];

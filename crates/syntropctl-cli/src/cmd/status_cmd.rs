@@ -10,7 +10,7 @@ pub async fn handle_status(target_daemon: Option<String>, json: bool) -> Result<
     let statuses = match target_daemon {
         Some(name) => {
             let ep = DaemonEndpoint::from_name(&name).ok_or_else(|| {
-                anyhow::anyhow!("Unknown daemon '{}'. Valid daemons: sentry, inferenced, modeld, contextd, toold, runtimed", name)
+                anyhow::anyhow!("Unknown daemon '{}'. Valid daemons: sentry, inferenced, modeld, contextd, toold, runtimed, routerd", name)
             })?;
             vec![check_daemon_status(ep).await]
         }
