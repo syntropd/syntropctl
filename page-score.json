@@ -1,6 +1,6 @@
 {
  "repo": "syntropctl",
- "rev": "a4f9aa9",
+ "rev": "474e2d2",
  "dirty": true,
  "pages": [
   {
@@ -29,7 +29,7 @@
    "lines": 10,
    "bin_bytes": null,
    "heat_pct": null,
-   "reach": 1
+   "reach": 0
   },
   {
    "path": "./crates/syntropctl-cli/src/cmd/execute/run_cmd.rs",
@@ -67,18 +67,18 @@
    "reach": 1
   },
   {
-   "path": "./crates/syntropctl-cli/src/cmd/inspect/mod.rs",
-   "lines": 15,
-   "bin_bytes": null,
-   "heat_pct": null,
-   "reach": 1
-  },
-  {
    "path": "./crates/syntropctl-cli/src/cmd/inspect/models_cmd.rs",
    "lines": 18,
    "bin_bytes": 1114,
    "heat_pct": null,
    "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-cli/src/cmd/inspect/mod.rs",
+   "lines": 15,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 0
   },
   {
    "path": "./crates/syntropctl-cli/src/cmd/inspect/status_cmd.rs",
@@ -92,14 +92,14 @@
    "lines": 15,
    "bin_bytes": null,
    "heat_pct": null,
-   "reach": 1
+   "reach": 0
   },
   {
    "path": "./crates/syntropctl-cli/src/format/mod.rs",
    "lines": 10,
    "bin_bytes": null,
    "heat_pct": null,
-   "reach": 1
+   "reach": 0
   },
   {
    "path": "./crates/syntropctl-cli/src/format/print_output.rs",
@@ -134,12 +134,12 @@
    "lines": 5,
    "bin_bytes": null,
    "heat_pct": null,
-   "reach": 1
+   "reach": 0
   },
   {
    "path": "./crates/syntropctl-core/src/error.rs",
    "lines": 100,
-   "bin_bytes": 45718,
+   "bin_bytes": 1632,
    "heat_pct": null,
    "reach": 10
   },
@@ -153,63 +153,63 @@
   {
    "path": "./crates/syntropctl-core/src/ops/devices.rs",
    "lines": 106,
-   "bin_bytes": 10027,
+   "bin_bytes": 8149,
    "heat_pct": null,
    "reach": 4
   },
   {
    "path": "./crates/syntropctl-core/src/ops/drift.rs",
    "lines": 65,
-   "bin_bytes": 14475,
+   "bin_bytes": 6055,
    "heat_pct": null,
    "reach": 4
   },
   {
    "path": "./crates/syntropctl-core/src/ops/explain.rs",
    "lines": 105,
-   "bin_bytes": 10240,
+   "bin_bytes": 8359,
    "heat_pct": null,
    "reach": 3
   },
   {
    "path": "./crates/syntropctl-core/src/ops/inference.rs",
    "lines": 104,
-   "bin_bytes": 12154,
-   "heat_pct": null,
-   "reach": 1
-  },
-  {
-   "path": "./crates/syntropctl-core/src/ops/mod.rs",
-   "lines": 17,
-   "bin_bytes": null,
+   "bin_bytes": 10844,
    "heat_pct": null,
    "reach": 1
   },
   {
    "path": "./crates/syntropctl-core/src/ops/models.rs",
    "lines": 92,
-   "bin_bytes": 6869,
+   "bin_bytes": 5377,
    "heat_pct": null,
    "reach": 5
   },
   {
+   "path": "./crates/syntropctl-core/src/ops/mod.rs",
+   "lines": 17,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 0
+  },
+  {
    "path": "./crates/syntropctl-core/src/ops/run.rs",
    "lines": 64,
-   "bin_bytes": 6770,
+   "bin_bytes": 5682,
    "heat_pct": null,
    "reach": 3
   },
   {
    "path": "./crates/syntropctl-core/src/ops/status.rs",
    "lines": 148,
-   "bin_bytes": 8372,
+   "bin_bytes": 6088,
    "heat_pct": null,
    "reach": 3
   },
   {
    "path": "./crates/syntropctl-core/src/varlink/client.rs",
    "lines": 138,
-   "bin_bytes": 26769,
+   "bin_bytes": 23369,
    "heat_pct": null,
    "reach": 1
   },
@@ -218,7 +218,7 @@
    "lines": 5,
    "bin_bytes": null,
    "heat_pct": null,
-   "reach": 1
+   "reach": 0
   },
   {
    "path": "./crates/syntropctl-core/tests/page_rule.rs",
@@ -305,5 +305,5 @@
    "reach": 0
   }
  ],
- "notes": "bin_bytes from newest dev rlib per crate via nm (inlining approx, bins re-link the same code);"
+ "notes": "reach counts referencing files (shared file names qualified by ancestor dir); bin_bytes from newest workspace dev rlib per crate via nm (inlining approx, bins re-link the same code; shims excluded, foreign paths never attributed);"
 }
