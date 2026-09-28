@@ -1,8 +1,12 @@
-//! Generate command handler.
+//! Text generation and shell completion command handlers.
 
 use anyhow::Result;
+use clap::CommandFactory;
+use clap_complete::{generate, Shell};
+use std::io;
 use syntropctl_core::ops::generate_text;
 
+use crate::cli::Cli;
 use crate::format::print_json;
 
 pub async fn handle_generate(
@@ -25,4 +29,10 @@ pub async fn handle_generate(
     }
 
     Ok(())
+}
+
+pub fn handle_completions(shell: Shell) {
+    let mut cmd = Cli::command();
+    let name = cmd.get_name().to_string();
+    generate(shell, &mut cmd, name, &mut io::stdout());
 }

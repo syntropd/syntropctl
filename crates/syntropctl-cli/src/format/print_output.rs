@@ -1,8 +1,17 @@
-//! Formatted tabular and human-readable plain text output.
+//! Formatted JSON, tabular, and human-readable plain text output.
 
+use serde::Serialize;
 use syntropctl_core::ops::{
     DaemonStatus, DeviceReport, DriftEvent, IncidentReport, ModelEntry,
 };
+
+/// Serialize and print data structure as formatted JSON.
+pub fn print_json<T: Serialize>(value: &T) {
+    match serde_json::to_string_pretty(value) {
+        Ok(json) => println!("{}", json),
+        Err(e) => eprintln!("{{\"error\": \"failed to serialize json: {}\"}}", e),
+    }
+}
 
 /// Print daemon fleet status in a clean columnar table.
 pub fn print_status_table(statuses: &[DaemonStatus]) {

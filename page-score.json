@@ -1,0 +1,309 @@
+{
+ "repo": "syntropctl",
+ "rev": "a4f9aa9",
+ "dirty": true,
+ "pages": [
+  {
+   "path": "./crates/syntropctl-cli/src/cli.rs",
+   "lines": 108,
+   "bin_bytes": 61456,
+   "heat_pct": null,
+   "reach": 4
+  },
+  {
+   "path": "./crates/syntropctl-cli/src/cmd/execute/embed_cmd.rs",
+   "lines": 25,
+   "bin_bytes": 4061,
+   "heat_pct": null,
+   "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-cli/src/cmd/execute/generate_cmd.rs",
+   "lines": 38,
+   "bin_bytes": 1984,
+   "heat_pct": null,
+   "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-cli/src/cmd/execute/mod.rs",
+   "lines": 10,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-cli/src/cmd/execute/run_cmd.rs",
+   "lines": 33,
+   "bin_bytes": 1595,
+   "heat_pct": null,
+   "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-cli/src/cmd/inspect/devices_cmd.rs",
+   "lines": 18,
+   "bin_bytes": 1114,
+   "heat_pct": null,
+   "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-cli/src/cmd/inspect/drift_cmd.rs",
+   "lines": 18,
+   "bin_bytes": 1180,
+   "heat_pct": null,
+   "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-cli/src/cmd/inspect/explain_cmd.rs",
+   "lines": 18,
+   "bin_bytes": 1066,
+   "heat_pct": null,
+   "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-cli/src/cmd/inspect/info_cmd.rs",
+   "lines": 67,
+   "bin_bytes": 8809,
+   "heat_pct": null,
+   "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-cli/src/cmd/inspect/mod.rs",
+   "lines": 15,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-cli/src/cmd/inspect/models_cmd.rs",
+   "lines": 18,
+   "bin_bytes": 1114,
+   "heat_pct": null,
+   "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-cli/src/cmd/inspect/status_cmd.rs",
+   "lines": 27,
+   "bin_bytes": 2221,
+   "heat_pct": null,
+   "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-cli/src/cmd/mod.rs",
+   "lines": 15,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-cli/src/format/mod.rs",
+   "lines": 10,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-cli/src/format/print_output.rs",
+   "lines": 173,
+   "bin_bytes": 12697,
+   "heat_pct": null,
+   "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-cli/src/lib.rs",
+   "lines": 7,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 0
+  },
+  {
+   "path": "./crates/syntropctl-cli/src/main.rs",
+   "lines": 63,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 0
+  },
+  {
+   "path": "./crates/syntropctl-core/src/daemon/endpoint.rs",
+   "lines": 140,
+   "bin_bytes": 1920,
+   "heat_pct": null,
+   "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-core/src/daemon/mod.rs",
+   "lines": 5,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-core/src/error.rs",
+   "lines": 100,
+   "bin_bytes": 45718,
+   "heat_pct": null,
+   "reach": 10
+  },
+  {
+   "path": "./crates/syntropctl-core/src/lib.rs",
+   "lines": 13,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 0
+  },
+  {
+   "path": "./crates/syntropctl-core/src/ops/devices.rs",
+   "lines": 106,
+   "bin_bytes": 10027,
+   "heat_pct": null,
+   "reach": 4
+  },
+  {
+   "path": "./crates/syntropctl-core/src/ops/drift.rs",
+   "lines": 65,
+   "bin_bytes": 14475,
+   "heat_pct": null,
+   "reach": 4
+  },
+  {
+   "path": "./crates/syntropctl-core/src/ops/explain.rs",
+   "lines": 105,
+   "bin_bytes": 10240,
+   "heat_pct": null,
+   "reach": 3
+  },
+  {
+   "path": "./crates/syntropctl-core/src/ops/inference.rs",
+   "lines": 104,
+   "bin_bytes": 12154,
+   "heat_pct": null,
+   "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-core/src/ops/mod.rs",
+   "lines": 17,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-core/src/ops/models.rs",
+   "lines": 92,
+   "bin_bytes": 6869,
+   "heat_pct": null,
+   "reach": 5
+  },
+  {
+   "path": "./crates/syntropctl-core/src/ops/run.rs",
+   "lines": 64,
+   "bin_bytes": 6770,
+   "heat_pct": null,
+   "reach": 3
+  },
+  {
+   "path": "./crates/syntropctl-core/src/ops/status.rs",
+   "lines": 148,
+   "bin_bytes": 8372,
+   "heat_pct": null,
+   "reach": 3
+  },
+  {
+   "path": "./crates/syntropctl-core/src/varlink/client.rs",
+   "lines": 138,
+   "bin_bytes": 26769,
+   "heat_pct": null,
+   "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-core/src/varlink/mod.rs",
+   "lines": 5,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-core/tests/page_rule.rs",
+   "lines": 153,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 0
+  },
+  {
+   "path": "./qa/edge/src/argument_edge.rs",
+   "lines": 51,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 0
+  },
+  {
+   "path": "./qa/edge/src/binary_edge.rs",
+   "lines": 72,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 0
+  },
+  {
+   "path": "./qa/edge/src/handler_edge.rs",
+   "lines": 110,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 0
+  },
+  {
+   "path": "./qa/edge/src/lib.rs",
+   "lines": 12,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 0
+  },
+  {
+   "path": "./qa/edge/src/protocol_edge.rs",
+   "lines": 86,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 0
+  },
+  {
+   "path": "./qa/edge/src/socket_edge.rs",
+   "lines": 60,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 0
+  },
+  {
+   "path": "./qa/unit/src/endpoint_tests.rs",
+   "lines": 74,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 0
+  },
+  {
+   "path": "./qa/unit/src/format_tests.rs",
+   "lines": 90,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 0
+  },
+  {
+   "path": "./qa/unit/src/lib.rs",
+   "lines": 10,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 0
+  },
+  {
+   "path": "./qa/unit/src/ops_tests.rs",
+   "lines": 101,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 0
+  },
+  {
+   "path": "./qa/unit/src/varlink_tests.rs",
+   "lines": 75,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 0
+  }
+ ],
+ "notes": "bin_bytes from newest dev rlib per crate via nm (inlining approx, bins re-link the same code);"
+}
