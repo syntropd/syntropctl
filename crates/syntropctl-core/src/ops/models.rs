@@ -26,29 +26,36 @@ pub struct StorageStats {
 
 /// Query storage quota and CAS statistics from modeld.
 pub async fn query_storage_stats() -> Result<StorageStats, SyntropctlError> {
-    if let Some(modeld_ep) = DaemonEndpoint::from_name("modeld") {
-        let sock = modeld_ep.socket_path();
-        if sock.exists() {
-            if let Ok(res) = VarlinkClient::call(
-                &sock,
-                "io.syntrop.Model1.GetStorageStats",
-                None,
-                DEFAULT_RPC_TIMEOUT,
-            )
-            .await
-            {
-                let total_bytes = res.get("total_bytes").and_then(|v| v.as_u64()).unwrap_or(0);
-                let model_count = res.get("model_count").and_then(|v| v.as_u64()).unwrap_or(0) as usize;
-                let pinned_count = res.get("pinned_count").and_then(|v| v.as_u64()).unwrap_or(0) as usize;
-                return Ok(StorageStats {
-                    total_bytes,
-                    model_count,
-                    pinned_count,
-                });
-            }
-        }
+    let modeld_ep = DaemonEndpoint::from_name("modeld")
+        .ok_or_else(|| SyntropctlError::NotFound("modeld endpoint not configured".into()))?;
+    let sock = modeld_ep.socket_path();
+    if !sock.exists() {
+        return Err(SyntropctlError::DaemonUnavailable {
+            daemon: "modeld".into(),
+            socket: sock,
+            source: std::io::Error::new(std::io::ErrorKind::NotFound, "Socket file does not exist"),
+        });
     }
-    Ok(StorageStats::default())
+
+    let res = VarlinkClient::call(
+        &sock,
+        "io.syntrop.Model1.GetStorageStats",
+        None,
+        DEFAULT_RPC_TIMEOUT,
+    )
+    .await?;
+
+    let total_bytes = res.get("total_bytes").and_then(|v| v.as_u64()).unwrap_or(0);
+    let model_count = res.get("model_count").and_then(|v| v.as_u64()).unwrap_or(0) as usize;
+    let pinned_count = res
+        .get("pinned_count")
+        .and_then(|v| v.as_u64())
+        .unwrap_or(0) as usize;
+    Ok(StorageStats {
+        total_bytes,
+        model_count,
+        pinned_count,
+    })
 }
 
 /// Query models across modeld (storage) and runtimed (execution).
@@ -72,8 +79,14 @@ pub async fn query_models() -> Result<Vec<ModelEntry>, SyntropctlError> {
                         if let Some(name) = m.get("name").and_then(|v| v.as_str()) {
                             let size = m.get("memory_bytes").and_then(|v| v.as_u64()).unwrap_or(0);
                             let params = m.get("parameter_count").and_then(|v| v.as_u64());
-                            let backend = m.get("compute_backend").and_then(|v| v.as_str()).map(|s| s.to_string());
-                            let ctx = m.get("context_window").and_then(|v| v.as_u64()).map(|v| v as usize);
+                            let backend = m
+                                .get("compute_backend")
+                                .and_then(|v| v.as_str())
+                                .map(|s| s.to_string());
+                            let ctx = m
+                                .get("context_window")
+                                .and_then(|v| v.as_u64())
+                                .map(|v| v as usize);
 
                             entries.push(ModelEntry {
                                 name: name.to_string(),
@@ -94,13 +107,9 @@ pub async fn query_models() -> Result<Vec<ModelEntry>, SyntropctlError> {
     if let Some(modeld_ep) = DaemonEndpoint::from_name("modeld") {
         let sock = modeld_ep.socket_path();
         if sock.exists() {
-            if let Ok(res) = VarlinkClient::call(
-                &sock,
-                "io.syntrop.Model1.List",
-                None,
-                DEFAULT_RPC_TIMEOUT,
-            )
-            .await
+            if let Ok(res) =
+                VarlinkClient::call(&sock, "io.syntrop.Model1.List", None, DEFAULT_RPC_TIMEOUT)
+                    .await
             {
                 if let Some(models) = res.get("models").and_then(|v| v.as_array()) {
                     for m in models {

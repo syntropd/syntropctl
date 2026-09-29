@@ -1,7 +1,7 @@
 {
  "repo": "syntropctl",
- "rev": "6d18c25",
- "dirty": true,
+ "rev": "9c80981",
+ "dirty": false,
  "pages": [
   {
    "path": "./crates/syntropctl-cli/src/cli.rs",
@@ -201,8 +201,8 @@
   },
   {
    "path": "./crates/syntropctl-core/src/ops/models.rs",
-   "lines": 138,
-   "bin_bytes": 12452,
+   "lines": 147,
+   "bin_bytes": 13201,
    "heat_pct": null,
    "reach": 4
   },
@@ -313,7 +313,7 @@
   },
   {
    "path": "./qa/unit/src/ops_tests.rs",
-   "lines": 101,
+   "lines": 117,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 0

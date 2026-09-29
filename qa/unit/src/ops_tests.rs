@@ -12,7 +12,10 @@ mod tests {
     async fn test_check_daemon_status_missing_socket() {
         let ep = DaemonEndpoint::from_name("sentry").unwrap();
         // Point to a non-existent socket
-        std::env::set_var("SYNTROP_SENTRY_SOCKET", "/tmp/definitely_not_a_real_socket.sock");
+        std::env::set_var(
+            "SYNTROP_SENTRY_SOCKET",
+            "/tmp/definitely_not_a_real_socket.sock",
+        );
         let status = check_daemon_status(ep).await;
 
         assert_eq!(status.name, "sentry");
@@ -97,5 +100,18 @@ mod tests {
             duration_ms: 45,
         };
         assert_eq!(gen_output.finish_reason, "stop");
+    }
+
+    #[tokio::test]
+    async fn test_query_storage_stats_missing_socket() {
+        std::env::set_var(
+            "SYNTROP_MODELD_SOCKET",
+            "/tmp/definitely_not_a_modeld_socket.sock",
+        );
+        let err = syntropctl_core::ops::query_storage_stats()
+            .await
+            .unwrap_err();
+        assert!(err.to_string().contains("modeld"), "{err}");
+        std::env::remove_var("SYNTROP_MODELD_SOCKET");
     }
 }
