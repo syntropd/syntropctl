@@ -16,7 +16,7 @@ name = "syntropctl"
 path = "src/main.rs"
 
 [dependencies]
-syntropctl-core = { version = "0.3.2", path = "../syntropctl-core" }
+syntropctl-core = { version = "0.3.3", path = "../syntropctl-core" }
 clap.workspace = true
 clap_complete.workspace = true
 tokio.workspace = true
