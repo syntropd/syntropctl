@@ -1,5 +1,6 @@
 //! High-level administration and diagnostic operations.
 
+pub mod cluster;
 pub mod devices;
 pub mod drift;
 pub mod explain;
@@ -8,6 +9,10 @@ pub mod models;
 pub mod run;
 pub mod status;
 
+pub use cluster::{
+    query_cluster_status, query_composite_leases, ClusterNodeSummary, ClusterStatusReport,
+    CompositeLeaseStatus, CompositeSliceItem,
+};
 pub use devices::{query_devices, DeviceReport};
 pub use drift::{query_drift, DriftEvent};
 pub use explain::{explain_unit, IncidentReport};
