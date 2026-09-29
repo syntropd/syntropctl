@@ -16,6 +16,41 @@ pub struct ModelEntry {
     pub context_window: Option<usize>,
 }
 
+/// Content-Addressable Storage quota and inventory statistics.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct StorageStats {
+    pub total_bytes: u64,
+    pub model_count: usize,
+    pub pinned_count: usize,
+}
+
+/// Query storage quota and CAS statistics from modeld.
+pub async fn query_storage_stats() -> Result<StorageStats, SyntropctlError> {
+    if let Some(modeld_ep) = DaemonEndpoint::from_name("modeld") {
+        let sock = modeld_ep.socket_path();
+        if sock.exists() {
+            if let Ok(res) = VarlinkClient::call(
+                &sock,
+                "io.syntrop.Model1.GetStorageStats",
+                None,
+                DEFAULT_RPC_TIMEOUT,
+            )
+            .await
+            {
+                let total_bytes = res.get("total_bytes").and_then(|v| v.as_u64()).unwrap_or(0);
+                let model_count = res.get("model_count").and_then(|v| v.as_u64()).unwrap_or(0) as usize;
+                let pinned_count = res.get("pinned_count").and_then(|v| v.as_u64()).unwrap_or(0) as usize;
+                return Ok(StorageStats {
+                    total_bytes,
+                    model_count,
+                    pinned_count,
+                });
+            }
+        }
+    }
+    Ok(StorageStats::default())
+}
+
 /// Query models across modeld (storage) and runtimed (execution).
 pub async fn query_models() -> Result<Vec<ModelEntry>, SyntropctlError> {
     let mut entries = Vec::new();
@@ -61,7 +96,7 @@ pub async fn query_models() -> Result<Vec<ModelEntry>, SyntropctlError> {
         if sock.exists() {
             if let Ok(res) = VarlinkClient::call(
                 &sock,
-                "io.syntrop.Model1.ListModels",
+                "io.syntrop.Model1.List",
                 None,
                 DEFAULT_RPC_TIMEOUT,
             )
@@ -69,18 +104,29 @@ pub async fn query_models() -> Result<Vec<ModelEntry>, SyntropctlError> {
             {
                 if let Some(models) = res.get("models").and_then(|v| v.as_array()) {
                     for m in models {
-                        if let Some(name) = m.get("name").and_then(|v| v.as_str()) {
-                            if !entries.iter().any(|e| e.name == name) {
-                                let size = m.get("size_bytes").and_then(|v| v.as_u64()).unwrap_or(0);
-                                entries.push(ModelEntry {
-                                    name: name.to_string(),
-                                    status: "cached".to_string(),
-                                    size_bytes: size,
-                                    parameter_count: None,
-                                    backend: None,
-                                    context_window: None,
-                                });
-                            }
+                        let display_name = if let Some(id) = m.get("id").and_then(|v| v.as_str()) {
+                            id.to_string()
+                        } else if let (Some(n), Some(t)) = (
+                            m.get("name").and_then(|v| v.as_str()),
+                            m.get("tag").and_then(|v| v.as_str()),
+                        ) {
+                            format!("{}:{}", n, t)
+                        } else if let Some(name) = m.get("name").and_then(|v| v.as_str()) {
+                            name.to_string()
+                        } else {
+                            continue;
+                        };
+
+                        if !entries.iter().any(|e| e.name == display_name) {
+                            let size = m.get("size_bytes").and_then(|v| v.as_u64()).unwrap_or(0);
+                            entries.push(ModelEntry {
+                                name: display_name,
+                                status: "cached".to_string(),
+                                size_bytes: size,
+                                parameter_count: None,
+                                backend: None,
+                                context_window: None,
+                            });
                         }
                     }
                 }

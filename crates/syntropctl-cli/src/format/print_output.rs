@@ -2,8 +2,9 @@
 
 use serde::Serialize;
 use syntropctl_core::ops::{
-    DaemonStatus, DeviceReport, DriftEvent, IncidentReport, ModelEntry,
+    DaemonStatus, DeviceReport, DriftEvent, IncidentReport, ModelEntry, StorageStats,
 };
+
 
 /// Serialize and print data structure as formatted JSON.
 pub fn print_json<T: Serialize>(value: &T) {
@@ -51,18 +52,27 @@ pub fn print_status_table(statuses: &[DaemonStatus]) {
     }
 }
 
-/// Print unified model catalog table.
+/// Print unified model catalog table with optional CAS storage quota.
 pub fn print_models_table(models: &[ModelEntry]) {
+    print_models_table_with_stats(models, None);
+}
+
+/// Print unified model catalog table with human tags and CAS storage quota display.
+pub fn print_models_table_with_stats(models: &[ModelEntry], stats: Option<&StorageStats>) {
     if models.is_empty() {
         println!("No models registered or currently loaded.");
+        if let Some(s) = stats {
+            println!();
+            print_cas_quota(s);
+        }
         return;
     }
 
     println!(
-        "{:<24} {:<10} {:<12} {:<10} {:<12} {:<10}",
+        "{:<28} {:<10} {:<12} {:<10} {:<12} {:<10}",
         "MODEL", "STATUS", "SIZE", "PARAMS", "BACKEND", "CONTEXT"
     );
-    println!("{}", "-".repeat(80));
+    println!("{}", "-".repeat(84));
 
     for m in models {
         let size_str = format_bytes(m.size_bytes);
@@ -77,11 +87,41 @@ pub fn print_models_table(models: &[ModelEntry]) {
             .unwrap_or_else(|| "-".to_string());
 
         println!(
-            "{:<24} {:<10} {:<12} {:<10} {:<12} {:<10}",
+            "{:<28} {:<10} {:<12} {:<10} {:<12} {:<10}",
             m.name, m.status, size_str, param_str, backend_str, ctx_str
         );
     }
+
+    println!();
+    if let Some(s) = stats {
+        print_cas_quota(s);
+    } else {
+        let cached_bytes: u64 = models
+            .iter()
+            .filter(|m| m.status == "cached")
+            .map(|m| m.size_bytes)
+            .sum();
+        println!("CAS Storage Quota: {} utilized", format_bytes(cached_bytes));
+    }
 }
+
+fn print_cas_quota(stats: &StorageStats) {
+    const DEFAULT_QUOTA_BYTES: u64 = 64 * 1024 * 1024 * 1024;
+    let pct = if DEFAULT_QUOTA_BYTES > 0 {
+        (stats.total_bytes as f64 / DEFAULT_QUOTA_BYTES as f64) * 100.0
+    } else {
+        0.0
+    };
+    println!(
+        "CAS Storage Quota: {} / {} ({:.1}% utilized) • {} models ({} pinned)",
+        format_bytes(stats.total_bytes),
+        format_bytes(DEFAULT_QUOTA_BYTES),
+        pct,
+        stats.model_count,
+        stats.pinned_count
+    );
+}
+
 
 /// Print hardware devices and accelerators table.
 pub fn print_devices_table(devices: &[DeviceReport]) {
