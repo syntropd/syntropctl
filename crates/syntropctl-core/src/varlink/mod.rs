@@ -2,4 +2,7 @@
 
 pub mod client;
 
-pub use client::{ServiceInfo, VarlinkCall, VarlinkClient, VarlinkReply, DEFAULT_RPC_TIMEOUT};
+pub use client::{
+    ServiceInfo, VarlinkCall, VarlinkClient, VarlinkReply, DEFAULT_RPC_TIMEOUT,
+    GENERATE_RPC_TIMEOUT,
+};

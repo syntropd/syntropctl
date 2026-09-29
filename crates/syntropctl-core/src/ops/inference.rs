@@ -2,7 +2,7 @@
 
 use crate::daemon::DaemonEndpoint;
 use crate::error::SyntropctlError;
-use crate::varlink::{VarlinkClient, DEFAULT_RPC_TIMEOUT};
+use crate::varlink::{GENERATE_RPC_TIMEOUT, VarlinkClient};
 use serde::{Deserialize, Serialize};
 
 /// Result of text generation from runtimed.
@@ -45,7 +45,7 @@ pub async fn generate_text(
         &sock,
         "io.syntrop.Runtime1.Generate",
         Some(params),
-        DEFAULT_RPC_TIMEOUT,
+        GENERATE_RPC_TIMEOUT,
     )
     .await?;
 
@@ -91,7 +91,7 @@ pub async fn embed_text(text: &str, model: &str) -> Result<Vec<f32>, SyntropctlE
         &sock,
         "io.syntrop.Runtime1.Embed",
         Some(params),
-        DEFAULT_RPC_TIMEOUT,
+        GENERATE_RPC_TIMEOUT,
     )
     .await?;
 
@@ -101,4 +101,49 @@ pub async fn embed_text(text: &str, model: &str) -> Result<Vec<f32>, SyntropctlE
 
     let vec: Vec<f32> = raw.iter().filter_map(|v| v.as_f64().map(|f| f as f32)).collect();
     Ok(vec)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::generate_text;
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+    use tokio::net::UnixListener;
+
+    /// A cold engine answers slower than the 10s metadata budget
+    /// (multi-GB weight load); generation must survive it. Fails on
+    /// the old 10s budget, passes on the generation budget.
+    #[tokio::test]
+    async fn generate_survives_slow_cold_engine() {
+        let path =
+            std::env::temp_dir().join(format!("gen-slow-{}.sock", std::process::id()));
+        let _ = std::fs::remove_file(&path);
+        let listener = UnixListener::bind(&path).unwrap();
+        std::env::set_var("SYNTROP_RUNTIMED_SOCKET", &path);
+        let server = tokio::spawn(async move {
+            let (mut sock, _) = listener.accept().await.unwrap();
+            let mut chunk = [0u8; 4096];
+            let _ = sock.read(&mut chunk).await;
+            tokio::time::sleep(std::time::Duration::from_secs(12)).await;
+            let reply = serde_json::json!({
+                "parameters": {
+                    "result": {
+                        "text": "slow-hi",
+                        "prompt_tokens": 1,
+                        "completion_tokens": 1,
+                        "finish_reason": "stop",
+                        "duration_ms": 12000
+                    }
+                }
+            });
+            let bytes = serde_json::to_vec(&reply).unwrap();
+            let _ = sock.write_all(&bytes).await;
+            let _ = sock.write_all(&[0x00]).await;
+        });
+        let out = generate_text("hi", "cold-model", 1, 0.0).await.unwrap();
+        assert_eq!(out.text, "slow-hi");
+        assert_eq!(out.completion_tokens, 1);
+        let _ = server.await;
+        std::env::remove_var("SYNTROP_RUNTIMED_SOCKET");
+        let _ = std::fs::remove_file(&path);
+    }
 }

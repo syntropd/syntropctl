@@ -11,6 +11,13 @@ use tokio::time::timeout;
 /// Timeout for standard Varlink RPC invocations.
 pub const DEFAULT_RPC_TIMEOUT: Duration = Duration::from_secs(10);
 
+/// Timeout for text generation and embedding calls. A cold engine
+/// loads multi-GB weights before the first token (minutes on CPU,
+/// ~11s measured on CUDA), so the 10s metadata budget would abort
+/// exactly the calls users care about. Matches the installer
+/// warmup budget rationale, not any backend speed.
+pub const GENERATE_RPC_TIMEOUT: Duration = Duration::from_secs(600);
+
 /// Structure representing a Varlink method call frame.
 #[derive(Serialize, Debug)]
 pub struct VarlinkCall<'a> {
