@@ -59,7 +59,7 @@ pub fn update_pending_count(base: &Path) {
     let count_path = base.join("pending_count");
     let tmp = count_path.with_extension("tmp");
     if let Ok(mut f) = File::create(&tmp) {
-        let _ = write!(f, "{count}\n");
+        let _ = writeln!(f, "{count}");
         let _ = f.sync_all();
         let _ = fs::rename(tmp, count_path);
     }

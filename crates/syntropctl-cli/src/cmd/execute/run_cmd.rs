@@ -28,6 +28,6 @@ pub async fn handle_run(
     if result.exit_code == 0 {
         Ok(ExitCode::SUCCESS)
     } else {
-        Ok(ExitCode::from((result.exit_code as u8) & 0xFF))
+        Ok(ExitCode::from(result.exit_code as u8))
     }
 }
