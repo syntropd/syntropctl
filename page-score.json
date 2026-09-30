@@ -1,6 +1,6 @@
 {
  "repo": "syntropctl",
- "rev": "054f05f",
+ "rev": "98879ba",
  "dirty": true,
  "pages": [
   {
@@ -103,7 +103,7 @@
   },
   {
    "path": "./crates/syntropctl-cli/src/format/print_output.rs",
-   "lines": 213,
+   "lines": 225,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 1
@@ -152,7 +152,7 @@
   },
   {
    "path": "./crates/syntropctl-core/src/ops/cluster/composite.rs",
-   "lines": 116,
+   "lines": 138,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 1
@@ -173,7 +173,7 @@
   },
   {
    "path": "./crates/syntropctl-core/src/ops/devices.rs",
-   "lines": 106,
+   "lines": 144,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 4
@@ -299,7 +299,7 @@
   },
   {
    "path": "./qa/unit/src/format_tests.rs",
-   "lines": 90,
+   "lines": 93,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 0
@@ -313,7 +313,7 @@
   },
   {
    "path": "./qa/unit/src/ops_tests.rs",
-   "lines": 117,
+   "lines": 120,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 0

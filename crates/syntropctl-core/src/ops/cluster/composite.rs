@@ -16,6 +16,9 @@ pub struct CompositeSliceItem {
     pub stage_index: Option<usize>,
     /// VRAM reserved in bytes.
     pub memory_bytes: u64,
+    /// Direct DRM render node or device path.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub device_path: Option<String>,
 }
 
 /// Composite lease status report.
@@ -54,12 +57,23 @@ pub async fn query_composite_leases() -> Result<Vec<CompositeLeaseStatus>, Syntr
     .await?;
 
     let mut leases = Vec::new();
-    if let Some(leases_arr) = res.get("leases").and_then(|v| v.as_array()) {
+    let key = if res.get("composite_leases").is_some() {
+        "composite_leases"
+    } else {
+        "leases"
+    };
+    if let Some(leases_arr) = res.get(key).and_then(|v| v.as_array()) {
         for l in leases_arr {
-            let lease_id = l.get("lease_id").and_then(|v| v.as_str()).unwrap_or("").to_string();
+            let lease_id = l
+                .get("lease_id")
+                .or_else(|| l.get("id"))
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .to_string();
             let gang_id = l.get("gang_id").and_then(|v| v.as_str()).unwrap_or("").to_string();
             let gang_policy = l
                 .get("gang_policy")
+                .or_else(|| l.get("policy"))
                 .and_then(|v| v.as_str())
                 .unwrap_or("AllOrNothing")
                 .to_string();
@@ -70,12 +84,18 @@ pub async fn query_composite_leases() -> Result<Vec<CompositeLeaseStatus>, Syntr
                     let plane_id = s.get("plane_id").and_then(|v| v.as_str()).unwrap_or("").to_string();
                     let role = s.get("role").and_then(|v| v.as_str()).unwrap_or("Standalone").to_string();
                     let stage_index = s.get("stage_index").and_then(|v| v.as_u64()).map(|v| v as usize);
-                    let memory_bytes = s.get("memory_bytes").and_then(|v| v.as_u64()).unwrap_or(0);
+                    let memory_bytes = s
+                        .get("memory_bytes")
+                        .or_else(|| s.get("allocated_memory"))
+                        .and_then(|v| v.as_u64())
+                        .unwrap_or(0);
+                    let device_path = s.get("device_path").and_then(|v| v.as_str()).map(|x| x.to_string());
                     slices.push(CompositeSliceItem {
                         plane_id,
                         role,
                         stage_index,
                         memory_bytes,
+                        device_path,
                     });
                 }
             }
@@ -103,6 +123,7 @@ mod tests {
             role: "PipelineStage".into(),
             stage_index: Some(0),
             memory_bytes: 8 << 30,
+            device_path: Some("/dev/dri/renderD128".into()),
         };
         let lease = CompositeLeaseStatus {
             lease_id: "lease-101".into(),
@@ -112,5 +133,6 @@ mod tests {
         };
         assert_eq!(lease.lease_id, "lease-101");
         assert_eq!(lease.slices[0].stage_index, Some(0));
+        assert_eq!(lease.slices[0].device_path.as_deref(), Some("/dev/dri/renderD128"));
     }
 }

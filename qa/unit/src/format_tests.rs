@@ -52,8 +52,11 @@ mod tests {
             model: "NPU 3720".to_string(),
             memory_total_bytes: 8_589_934_592,
             memory_used_bytes: 1_073_741_824,
+            available_memory_bytes: 7_516_192_768,
+            headroom_pct: 87.5,
             psi_pressure: 0.1,
             status: "ready".to_string(),
+            p2p_links: None,
         }];
         print_devices_table(&devices);
 

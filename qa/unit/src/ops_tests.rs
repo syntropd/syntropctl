@@ -67,8 +67,11 @@ mod tests {
             model: "RTX 4090".to_string(),
             memory_total_bytes: 25_769_803_776,
             memory_used_bytes: 4_294_967_296,
+            available_memory_bytes: 21_474_836_480,
+            headroom_pct: 83.3,
             psi_pressure: 0.0,
             status: "active".to_string(),
+            p2p_links: None,
         };
         let d_json = serde_json::to_string(&device).unwrap();
         assert!(d_json.contains("RTX 4090"));
