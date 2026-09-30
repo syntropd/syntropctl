@@ -81,6 +81,10 @@ pub enum Commands {
         /// Decoding temperature (0.0 for deterministic output).
         #[arg(short = 't', long = "temperature", default_value = "0.0")]
         temperature: f32,
+
+        /// Reasoning effort tier (none, low, medium, high, max).
+        #[arg(short = 'e', long = "effort", alias = "reasoning-effort")]
+        effort: Option<String>,
     },
 
     /// Compute semantic vector embedding for input text via runtimed.

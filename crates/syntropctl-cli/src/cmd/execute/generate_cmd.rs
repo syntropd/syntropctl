@@ -14,9 +14,10 @@ pub async fn handle_generate(
     model: &str,
     max_tokens: usize,
     temperature: f32,
+    effort: Option<&str>,
     json: bool,
 ) -> Result<()> {
-    let output = generate_text(prompt, model, max_tokens, temperature).await?;
+    let output = generate_text(prompt, model, max_tokens, temperature, effort).await?;
 
     if json {
         print_json(&output);

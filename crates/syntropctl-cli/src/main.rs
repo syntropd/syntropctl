@@ -33,7 +33,8 @@ async fn main() -> ExitCode {
             model,
             max_tokens,
             temperature,
-        } => handle_generate(&prompt, &model, max_tokens, temperature, json)
+            effort,
+        } => handle_generate(&prompt, &model, max_tokens, temperature, effort.as_deref(), json)
             .await
             .map(|_| ExitCode::SUCCESS),
         Commands::Embed { text, model } => handle_embed(&text, &model, json).await.map(|_| ExitCode::SUCCESS),

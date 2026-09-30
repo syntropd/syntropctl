@@ -54,9 +54,9 @@ mod tests {
     #[tokio::test]
     async fn test_generate_fails_without_runtimed() {
         pin_all_sockets_missing();
-        let err = handle_generate("hello", "tiny", 8, 0.0, false).await.unwrap_err();
+        let err = handle_generate("hello", "tiny", 8, 0.0, None, false).await.unwrap_err();
         assert!(err.to_string().contains("runtimed"), "{err}");
-        assert!(handle_generate("hello", "tiny", 8, 0.0, true).await.is_err());
+        assert!(handle_generate("hello", "tiny", 8, 0.0, None, true).await.is_err());
     }
 
     #[tokio::test]

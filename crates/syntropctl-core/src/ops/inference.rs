@@ -21,6 +21,7 @@ pub async fn generate_text(
     model: &str,
     max_tokens: usize,
     temperature: f32,
+    reasoning_effort: Option<&str>,
 ) -> Result<GenerationOutput, SyntropctlError> {
     let runtimed_ep = DaemonEndpoint::from_name("runtimed")
         .ok_or_else(|| SyntropctlError::NotFound("runtimed endpoint not configured".into()))?;
@@ -34,12 +35,15 @@ pub async fn generate_text(
         });
     }
 
-    let params = serde_json::json!({
+    let mut params = serde_json::json!({
         "model": model,
         "prompt": prompt,
         "max_tokens": max_tokens,
         "temperature": temperature,
     });
+    if let Some(effort) = reasoning_effort {
+        params["reasoning_effort"] = serde_json::json!(effort);
+    }
 
     let res = VarlinkClient::call(
         &sock,
@@ -139,7 +143,7 @@ mod tests {
             let _ = sock.write_all(&bytes).await;
             let _ = sock.write_all(&[0x00]).await;
         });
-        let out = generate_text("hi", "cold-model", 1, 0.0).await.unwrap();
+        let out = generate_text("hi", "cold-model", 1, 0.0, None).await.unwrap();
         assert_eq!(out.text, "slow-hi");
         assert_eq!(out.completion_tokens, 1);
         let _ = server.await;
