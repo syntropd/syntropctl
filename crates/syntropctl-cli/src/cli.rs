@@ -82,7 +82,7 @@ pub enum Commands {
         #[arg(short = 't', long = "temperature", default_value = "0.0")]
         temperature: f32,
 
-        /// Reasoning effort tier (none, low, medium, high, max).
+        /// Reasoning effort tier (none, low, medium, high, max; defaults to 0 tokens on CPU / tight memory, 1,024 on GPU with healthy VRAM).
         #[arg(short = 'e', long = "effort", alias = "reasoning-effort")]
         effort: Option<String>,
     },
