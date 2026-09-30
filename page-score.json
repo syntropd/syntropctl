@@ -1,6 +1,6 @@
 {
  "repo": "syntropctl",
- "rev": "0ea0c76",
+ "rev": "2c2a5ad",
  "dirty": true,
  "pages": [
   {
@@ -96,21 +96,21 @@
   },
   {
    "path": "./crates/syntropctl-cli/src/cmd/triage/audit_cmd.rs",
-   "lines": 135,
+   "lines": 182,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 1
   },
   {
    "path": "./crates/syntropctl-cli/src/cmd/triage/decide_cmd.rs",
-   "lines": 240,
+   "lines": 159,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 1
   },
   {
    "path": "./crates/syntropctl-cli/src/cmd/triage/mod.rs",
-   "lines": 16,
+   "lines": 18,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 0
@@ -121,6 +121,13 @@
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-cli/src/cmd/triage/queue.rs",
+   "lines": 175,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 2
   },
   {
    "path": "./crates/syntropctl-cli/src/format/mod.rs",

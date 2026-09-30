@@ -29,6 +29,40 @@ pub struct AuditEntry {
     pub explanation: String,
 }
 
+fn format_timestamp(raw: &str) -> String {
+    if raw.is_empty() {
+        return "-".into();
+    }
+    if raw.contains('T') {
+        let clean = raw.split('.').next().unwrap_or(raw);
+        return clean.replace('T', " ").trim_end_matches('Z').to_string();
+    }
+    if let Ok(mut num) = raw.parse::<u64>() {
+        if num > 1_000_000_000_000 {
+            num /= 1_000_000;
+        }
+        let secs = num % 86400;
+        let mut days = num / 86400;
+        let h = secs / 3600;
+        let m = (secs % 3600) / 60;
+        let s = secs % 60;
+        days += 719468;
+        let era = days / 146097;
+        let doe = days % 146097;
+        let yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;
+        let mut y = (yoe as i64) + (era as i64) * 400;
+        let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+        let mp = (5 * doy + 2) / 153;
+        let d = doy - (153 * mp + 2) / 5 + 1;
+        let m_month = if mp < 10 { mp + 3 } else { mp - 9 };
+        if m_month <= 2 {
+            y += 1;
+        }
+        return format!("{y:04}-{m_month:02}-{d:02} {h:02}:{m:02}:{s:02}");
+    }
+    raw.chars().take(19).collect()
+}
+
 /// Queries structured audit entries from journald and fallback file.
 pub async fn handle_audit(
     unit: Option<&str>,
@@ -62,18 +96,23 @@ pub async fn handle_audit(
         }
     }
 
-    // 2. Supplement from /run/syntrop/audit.log if journalctl gave no matches
-    if entries.is_empty() {
-        let base = std::env::var("RUNTIME_DIRECTORY")
-            .map(PathBuf::from)
-            .unwrap_or_else(|_| PathBuf::from("/run/syntrop"));
-        let audit_file = base.join("audit.log");
-        if audit_file.exists() {
-            if let Ok(f) = File::open(&audit_file) {
-                let reader = BufReader::new(f);
-                for line in reader.lines().map_while(Result::ok) {
-                    if let Ok(e) = serde_json::from_str::<AuditEntry>(&line) {
-                        entries.push(e);
+    // 2. Merge entries from /run/syntrop/audit.log
+    let base = std::env::var("RUNTIME_DIRECTORY")
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| PathBuf::from("/run/syntrop"));
+    let audit_file = base.join("audit.log");
+    if audit_file.exists() {
+        if let Ok(f) = File::open(&audit_file) {
+            let reader = BufReader::new(f);
+            for line in reader.lines().map_while(Result::ok) {
+                if let Ok(e) = serde_json::from_str::<AuditEntry>(&line) {
+                    if !e.unit.is_empty() {
+                        let dup = entries.iter().any(|existing| {
+                            existing.incident_id == e.incident_id && existing.status == e.status
+                        });
+                        if !dup {
+                            entries.push(e);
+                        }
                     }
                 }
             }
@@ -105,9 +144,10 @@ pub async fn handle_audit(
                 serde_json::Value::String(s) => s.clone(),
                 _ => "-".into(),
             };
+            let time_str = format_timestamp(&e.timestamp);
             println!(
                 "{:<24} {:<20} {:<8} {:<16} {:<16} {:<8}",
-                e.timestamp.chars().take(23).collect::<String>(),
+                time_str,
                 e.unit,
                 e.tier,
                 e.action,
@@ -131,5 +171,12 @@ mod tests {
         assert_eq!(entry.unit, "test.service");
         assert_eq!(entry.tier, "HIGH");
         assert_eq!(entry.action, "RESTART");
+    }
+
+    #[test]
+    fn test_format_timestamp_varieties() {
+        assert_eq!(format_timestamp(""), "-");
+        assert_eq!(format_timestamp("2026-09-30T15:28:00Z"), "2026-09-30 15:28:00");
+        assert_eq!(format_timestamp("0"), "1970-01-01 00:00:00");
     }
 }

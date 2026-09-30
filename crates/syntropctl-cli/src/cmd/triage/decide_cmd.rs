@@ -1,86 +1,30 @@
 //! Interactive single-keystroke TUI and CLI for pending System One triage decisions.
 
+use super::queue::{get_base_dir, load_incidents, resolve_incident, with_lock};
 use rustix::stdio::stdin;
 use rustix::termios::{tcgetattr, tcsetattr, OptionalActions};
-use serde::{Deserialize, Serialize};
-use std::fs::{self, File, OpenOptions};
+use std::fs;
 use std::io::{Read, Write};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use tokio::process::Command;
-
-/// Pending incident loaded from disk.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PendingIncident {
-    pub incident_id: String,
-    pub unit: String,
-    pub timestamp: String,
-    pub fault_class: serde_json::Value,
-    pub confidence: f32,
-    pub tier: serde_json::Value,
-    pub proposed_action: serde_json::Value,
-    pub explanation: String,
-    #[serde(default)]
-    pub journal_excerpt: Vec<String>,
-}
-
-fn get_pending_dir() -> PathBuf {
-    let base = std::env::var("RUNTIME_DIRECTORY")
-        .map(PathBuf::from)
-        .unwrap_or_else(|_| PathBuf::from("/run/syntrop"));
-    base.join("pending")
-}
-
-fn get_count_file() -> PathBuf {
-    let base = std::env::var("RUNTIME_DIRECTORY")
-        .map(PathBuf::from)
-        .unwrap_or_else(|_| PathBuf::from("/run/syntrop"));
-    base.join("pending_count")
-}
-
-fn update_pending_count(dir: &Path) {
-    let mut count = 0;
-    if let Ok(entries) = fs::read_dir(dir) {
-        for entry in entries.flatten() {
-            if entry.path().extension().is_some_and(|e| e == "json") {
-                count += 1;
-            }
-        }
-    }
-    let count_path = get_count_file();
-    let tmp = count_path.with_extension("tmp");
-    if let Ok(mut f) = File::create(&tmp) {
-        let _ = write!(f, "{count}\n");
-        let _ = f.sync_all();
-        let _ = fs::rename(tmp, count_path);
-    }
-}
-
-fn load_incidents(dir: &Path) -> Vec<(PathBuf, PendingIncident)> {
-    let mut list = Vec::new();
-    if let Ok(entries) = fs::read_dir(dir) {
-        for entry in entries.flatten() {
-            let p = entry.path();
-            if p.extension().is_some_and(|e| e == "json") {
-                if let Ok(data) = fs::read_to_string(&p) {
-                    if let Ok(inc) = serde_json::from_str::<PendingIncident>(&data) {
-                        list.push((p, inc));
-                    }
-                }
-            }
-        }
-    }
-    list.sort_by(|a, b| a.1.timestamp.cmp(&b.1.timestamp));
-    list
-}
 
 async fn execute_action(unit: &str, action: &str) -> anyhow::Result<()> {
     let act = action.to_ascii_uppercase();
-    if act.contains("RESTART") {
-        let _ = Command::new("systemctl").args(["restart", unit]).status().await?;
+    let sub = if act.contains("RESTART") {
+        "restart"
     } else if act.contains("RELOAD") {
-        let _ = Command::new("systemctl").args(["reload", unit]).status().await?;
+        "reload"
     } else if act.contains("RESET") {
-        let _ = Command::new("systemctl").args(["reset-failed", unit]).status().await?;
+        "reset-failed"
+    } else {
+        return Ok(());
+    };
+    let status = Command::new("systemctl")
+        .args(["--no-ask-password", sub, unit])
+        .status()
+        .await?;
+    if !status.success() {
+        anyhow::bail!("systemctl {sub} {unit} failed with status: {status}");
     }
     Ok(())
 }
@@ -107,17 +51,17 @@ pub async fn handle_decide(
     reject_id: Option<&str>,
     json: bool,
 ) -> anyhow::Result<()> {
-    let pending_dir = get_pending_dir();
-    fs::create_dir_all(&pending_dir)?;
+    let base = get_base_dir();
+    fs::create_dir_all(base.join("pending"))?;
 
     if let Some(id) = approve_id {
-        return process_targeted(&pending_dir, id, true, json).await;
+        return process_targeted(&base, id, true, json).await;
     }
     if let Some(id) = reject_id {
-        return process_targeted(&pending_dir, id, false, json).await;
+        return process_targeted(&base, id, false, json).await;
     }
 
-    let incidents = load_incidents(&pending_dir);
+    let incidents = with_lock(&base, || Ok(load_incidents(&base)))?;
     if incidents.is_empty() {
         if json {
             println!("{}", serde_json::json!({ "pending": 0 }));
@@ -142,17 +86,21 @@ pub async fn handle_decide(
 
             match key {
                 'y' | 'Y' => {
-                    execute_action(&inc.unit, act_str).await?;
-                    let _ = fs::remove_file(&path);
-                    update_pending_count(&pending_dir);
-                    append_audit(&inc.incident_id, &inc.unit, act_str, "approved", &inc.explanation);
-                    println!("Approved and executed {} on {}", act_str, inc.unit);
+                    if let Err(e) = execute_action(&inc.unit, act_str).await {
+                        eprintln!("Warning: action failed on {}: {e}", inc.unit);
+                    }
+                    with_lock(&base, || {
+                        resolve_incident(&base, &path, &inc, act_str, "approved");
+                        Ok(())
+                    })?;
+                    println!("Approved incident {} on {}", inc.incident_id, inc.unit);
                     break;
                 }
                 'n' | 'N' => {
-                    let _ = fs::remove_file(&path);
-                    update_pending_count(&pending_dir);
-                    append_audit(&inc.incident_id, &inc.unit, act_str, "rejected", &inc.explanation);
+                    with_lock(&base, || {
+                        resolve_incident(&base, &path, &inc, act_str, "rejected");
+                        Ok(())
+                    })?;
                     println!("Rejected incident {}", inc.incident_id);
                     break;
                 }
@@ -164,13 +112,14 @@ pub async fn handle_decide(
                     println!("-----------------------\n");
                 }
                 'm' | 'M' => {
-                    let _ = fs::remove_file(&path);
-                    update_pending_count(&pending_dir);
-                    append_audit(&inc.incident_id, &inc.unit, act_str, "escalated", &inc.explanation);
+                    with_lock(&base, || {
+                        resolve_incident(&base, &path, &inc, act_str, "escalated");
+                        Ok(())
+                    })?;
                     println!("Escalated incident {} to operator backlog", inc.incident_id);
                     break;
                 }
-                'q' | 'Q' => {
+                'q' | 'Q' | '\x03' | '\x04' => {
                     println!("Exiting decision triage.");
                     return Ok(());
                 }
@@ -182,32 +131,32 @@ pub async fn handle_decide(
     Ok(())
 }
 
-async fn process_targeted(dir: &Path, id: &str, approve: bool, json: bool) -> anyhow::Result<()> {
-    let incidents = load_incidents(dir);
-    let found = incidents.into_iter().find(|(_, inc)| inc.incident_id.starts_with(id));
-
-    let (path, inc) = match found {
-        Some(item) => item,
-        None => {
-            anyhow::bail!("Incident '{}' not found in pending queue", id);
-        }
-    };
+async fn process_targeted(base: &Path, id: &str, approve: bool, json: bool) -> anyhow::Result<()> {
+    let (path, inc) = with_lock(base, || {
+        let incidents = load_incidents(base);
+        let found = incidents.into_iter().find(|(_, inc)| inc.incident_id.starts_with(id));
+        found.ok_or_else(|| anyhow::anyhow!("Incident '{id}' not found in pending queue"))
+    })?;
 
     let act_str = inc.proposed_action.as_str().unwrap_or("RESTART");
     if approve {
-        execute_action(&inc.unit, act_str).await?;
-        let _ = fs::remove_file(&path);
-        update_pending_count(dir);
-        append_audit(&inc.incident_id, &inc.unit, act_str, "approved", &inc.explanation);
+        if let Err(e) = execute_action(&inc.unit, act_str).await {
+            eprintln!("Warning: action failed on {}: {e}", inc.unit);
+        }
+        with_lock(base, || {
+            resolve_incident(base, &path, &inc, act_str, "approved");
+            Ok(())
+        })?;
         if json {
             println!("{}", serde_json::json!({ "status": "approved", "incident_id": inc.incident_id, "action": act_str }));
         } else {
-            println!("Approved and executed {} for {}", act_str, inc.unit);
+            println!("Approved incident {} for {}", inc.incident_id, inc.unit);
         }
     } else {
-        let _ = fs::remove_file(&path);
-        update_pending_count(dir);
-        append_audit(&inc.incident_id, &inc.unit, act_str, "rejected", &inc.explanation);
+        with_lock(base, || {
+            resolve_incident(base, &path, &inc, act_str, "rejected");
+            Ok(())
+        })?;
         if json {
             println!("{}", serde_json::json!({ "status": "rejected", "incident_id": inc.incident_id }));
         } else {
@@ -215,26 +164,4 @@ async fn process_targeted(dir: &Path, id: &str, approve: bool, json: bool) -> an
         }
     }
     Ok(())
-}
-
-fn append_audit(id: &str, unit: &str, action: &str, status: &str, explanation: &str) {
-    let base = std::env::var("RUNTIME_DIRECTORY")
-        .map(PathBuf::from)
-        .unwrap_or_else(|_| PathBuf::from("/run/syntrop"));
-    let log_path = base.join("audit.log");
-    let ts = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .map(|d| d.as_secs().to_string())
-        .unwrap_or_default();
-    let record = serde_json::json!({
-        "incident_id": id,
-        "timestamp": ts,
-        "unit": unit,
-        "action": action,
-        "status": status,
-        "explanation": explanation,
-    });
-    if let Ok(mut f) = OpenOptions::new().create(true).append(true).open(log_path) {
-        let _ = writeln!(f, "{record}");
-    }
 }
