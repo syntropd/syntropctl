@@ -43,6 +43,13 @@ async fn main() -> ExitCode {
             handle_completions(shell);
             Ok(ExitCode::SUCCESS)
         }
+        Commands::Decide { approve, reject } => handle_decide(approve.as_deref(), reject.as_deref(), json)
+            .await
+            .map(|_| ExitCode::SUCCESS),
+        Commands::Prompt { raw } => handle_prompt(raw).map(|_| ExitCode::SUCCESS),
+        Commands::Audit { unit, limit } => handle_audit(unit.as_deref(), limit, json)
+            .await
+            .map(|_| ExitCode::SUCCESS),
     };
 
     match res {

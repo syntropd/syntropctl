@@ -109,4 +109,33 @@ pub enum Commands {
         #[arg(value_enum)]
         shell: Shell,
     },
+
+    /// Review and approve or reject pending System One triage decisions.
+    Decide {
+        /// Approve specific incident ID without interactive prompt.
+        #[arg(long = "approve")]
+        approve: Option<String>,
+
+        /// Reject specific incident ID without interactive prompt.
+        #[arg(long = "reject")]
+        reject: Option<String>,
+    },
+
+    /// Sub-millisecond shell prompt hook returning pending triage count.
+    Prompt {
+        /// Print raw count integer without prompt decoration.
+        #[arg(long = "raw")]
+        raw: bool,
+    },
+
+    /// Query structured systemd-journald audit trail.
+    Audit {
+        /// Filter audit records by service unit name.
+        #[arg(short = 'u', long = "unit")]
+        unit: Option<String>,
+
+        /// Maximum number of audit records to return.
+        #[arg(short = 'n', long = "limit", default_value = "50")]
+        limit: usize,
+    },
 }

@@ -2,6 +2,7 @@
 
 pub mod execute;
 pub mod inspect;
+pub mod triage;
 
 pub use execute::handle_completions;
 pub use execute::handle_embed;
@@ -13,3 +14,6 @@ pub use inspect::handle_explain;
 pub use inspect::handle_info;
 pub use inspect::handle_models;
 pub use inspect::handle_status;
+pub use triage::handle_audit;
+pub use triage::handle_decide;
+pub use triage::handle_prompt;
