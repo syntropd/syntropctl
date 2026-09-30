@@ -1,6 +1,6 @@
 {
  "repo": "syntropctl",
- "rev": "98879ba",
+ "rev": "79f1f12",
  "dirty": true,
  "pages": [
   {
@@ -103,7 +103,7 @@
   },
   {
    "path": "./crates/syntropctl-cli/src/format/print_output.rs",
-   "lines": 225,
+   "lines": 229,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 1
@@ -173,7 +173,7 @@
   },
   {
    "path": "./crates/syntropctl-core/src/ops/devices.rs",
-   "lines": 144,
+   "lines": 149,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 4

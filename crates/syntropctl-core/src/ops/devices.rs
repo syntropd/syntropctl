@@ -109,7 +109,12 @@ pub async fn query_devices() -> Result<Vec<DeviceReport>, SyntropctlError> {
             let name = p.get("name").and_then(|v| v.as_str()).unwrap_or("").to_string();
             let mem_total = p.get("total_memory").and_then(|v| v.as_u64()).unwrap_or(0);
             let mem_avail = p.get("available_memory").and_then(|v| v.as_u64()).unwrap_or(0);
-            let mem_used = mem_total.saturating_sub(mem_avail);
+            let kernel_used = p.get("kernel_used_memory").and_then(|v| v.as_u64()).unwrap_or(0);
+            let mem_used = if kernel_used > 0 {
+                kernel_used
+            } else {
+                mem_total.saturating_sub(mem_avail)
+            };
             let headroom_pct = if mem_total > 0 {
                 (mem_avail as f32 / mem_total as f32) * 100.0
             } else {

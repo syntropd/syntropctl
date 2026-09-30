@@ -131,13 +131,17 @@ pub fn print_devices_table(devices: &[DeviceReport]) {
     }
 
     println!(
-        "{:<14} {:<8} {:<16} {:<16} {:<10} {:<8} {:<8}",
+        "{:<16} {:<20} {:<32} {:<18} {:<10} {:<8} {:<8}",
         "DEVICE", "TYPE", "VENDOR/MODEL", "VRAM (USED/TOT)", "HEADROOM", "PSI-10", "STATUS"
     );
-    println!("{}", "-".repeat(86));
+    println!("{}", "-".repeat(116));
 
     for d in devices {
-        let name = format!("{} {}", d.vendor, d.model);
+        let name = if d.model.is_empty() {
+            d.vendor.clone()
+        } else {
+            format!("{} {}", d.vendor, d.model)
+        };
         let vram = format!(
             "{}/{}",
             format_bytes(d.memory_used_bytes),
@@ -147,7 +151,7 @@ pub fn print_devices_table(devices: &[DeviceReport]) {
         let psi = format!("{:.1}%", d.psi_pressure);
 
         println!(
-            "{:<14} {:<8} {:<16} {:<16} {:<10} {:<8} {:<8}",
+            "{:<16} {:<20} {:<32} {:<18} {:<10} {:<8} {:<8}",
             d.id, d.device_type, name, vram, headroom, psi, d.status
         );
 
@@ -156,7 +160,7 @@ pub fn print_devices_table(devices: &[DeviceReport]) {
                 let bw_gb = link.bandwidth_bytes_sec as f64 / 1_000_000_000.0;
                 let lat_us = link.latency_nanos as f64 / 1_000.0;
                 println!(
-                    "  └─ P2P -> {:<10} {:<10} ({:.1} GB/s, {:.1} µs)",
+                    "  └─ P2P -> {:<12} {:<12} ({:.1} GB/s, {:.1} µs)",
                     link.peer_plane_id, link.link_type, bw_gb, lat_us
                 );
             }
