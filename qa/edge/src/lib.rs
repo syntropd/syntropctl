@@ -1,6 +1,8 @@
 //! Root module for edge QA tests.
 
 #[cfg(test)]
+pub mod admin_edge;
+#[cfg(test)]
 pub mod argument_edge;
 #[cfg(test)]
 pub mod binary_edge;

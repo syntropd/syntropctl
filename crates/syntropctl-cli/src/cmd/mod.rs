@@ -1,10 +1,12 @@
 //! Command implementation modules for syntropctl subcommands.
 
+pub mod admin;
 pub mod execute;
 pub mod inspect;
 pub mod sensory;
 pub mod triage;
 
+pub use admin::handle_admin;
 pub use execute::handle_completions;
 pub use execute::handle_embed;
 pub use execute::handle_generate;

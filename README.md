@@ -6,7 +6,7 @@ Part of the [syntropd](https://github.com/syntropd) Linux AI systemd initiative.
 
 ## Subsystem Architecture
 
-`syntropctl` coordinates and inspects the 6 specialized daemons in the syntropd suite:
+`syntropctl` coordinates and inspects the 7 specialized daemons in the syntropd suite:
 
 - **sentry**: Autonomous supervisor, journal slicing, and failure triage (`io.syntrop.Sentry1`).
 - **inferenced**: Heterogeneous GPU/NPU/AMX hardware arbiter and lease broker (`io.syntrop.Inference1`).
@@ -14,10 +14,12 @@ Part of the [syntropd](https://github.com/syntropd) Linux AI systemd initiative.
 - **contextd**: System chronology and configuration drift tracker (`io.syntrop.Context1`).
 - **toold**: Sandboxed command and tool execution agent (`io.syntrop.Tool1`).
 - **runtimed**: Headless neural model execution and embedding engine (`io.syntrop.Runtime1`).
+- **routerd**: Multi-provider LLM reverse proxy and speculative router (`io.syntrop.Router1`).
 
 ## Core Features
 
-- **Fleet Health Matrix**: `syntropctl status` queries all 6 daemons and inspects socket connectivity, latency, and Varlink responsiveness.
+- **Fleet Health Matrix**: `syntropctl status` queries all 7 daemons and inspects socket connectivity, latency, and Varlink responsiveness.
+- **Autonomous Administration**: `syntropctl admin` (`syn admin`) provides status, declarative remediation recipes, snapshot rollbacks, structured journal audit trails, and circuit-breaker lockout resets.
 - **Incident Explanation**: `syntropctl explain <unit>` merges sentry failure diagnostics with contextd configuration drift.
 - **Model Catalog**: `syntropctl models` combines CAS disk inventory with loaded memory footprints.
 - **Accelerator Inspection**: `syntropctl devices` reports GPU/NPU memory allocations and PSI memory pressure.

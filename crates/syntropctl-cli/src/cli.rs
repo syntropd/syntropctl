@@ -1,5 +1,6 @@
 //! CLI arguments and command definitions for syntropctl.
 
+use crate::cmd::admin::AdminCommands;
 use clap::{Parser, Subcommand};
 use clap_complete::Shell;
 use std::path::PathBuf;
@@ -144,6 +145,12 @@ pub enum Commands {
     Sensory {
         #[command(subcommand)]
         command: SensoryCommands,
+    },
+
+    /// Autonomous OS self-healing, remediation recipes, and circuit breaker management.
+    Admin {
+        #[command(subcommand)]
+        command: AdminCommands,
     },
 }
 

@@ -3,12 +3,18 @@
 //! Provides pure Rust Varlink client communication, daemon discovery,
 //! and operations targeting the syntropd AI subsystem daemons.
 
+pub mod admin;
 pub mod daemon;
 pub mod error;
 pub mod ops;
 pub mod sensory;
 pub mod varlink;
 
+pub use admin::{
+    execute_remediation, execute_rollback, log_admin_audit, query_admin_audit, query_admin_status,
+    reset_lockout, AdminAuditEntry, AdminStatusReport, CircuitBreakerInfo, LockoutResetOutcome,
+    RecipeStep, RemediationOutcome, RemediationRecipe, RemediationRecipeKind, RollbackOutcome,
+};
 pub use daemon::{DaemonEndpoint, DaemonKind, DAEMONS};
 pub use error::SyntropctlError;
 pub use sensory::capture_audio;

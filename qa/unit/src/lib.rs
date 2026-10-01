@@ -1,6 +1,8 @@
 //! Root module for unit QA tests.
 
 #[cfg(test)]
+pub mod admin_tests;
+#[cfg(test)]
 pub mod endpoint_tests;
 #[cfg(test)]
 pub mod format_tests;
