@@ -2,10 +2,9 @@
 
 use crate::error::SyntropctlError;
 use serde::{Deserialize, Serialize};
-use std::fs::{File, OpenOptions};
-use std::io::{BufRead, BufReader, Write};
+use std::io::BufRead;
 use std::os::unix::net::UnixDatagram;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use tokio::process::Command;
 
 /// Structured audit record of an administrative or self-healing action.
@@ -23,14 +22,6 @@ pub struct AdminAuditEntry {
     pub result: String,
     #[serde(alias = "MESSAGE", default)]
     pub message: String,
-}
-
-/// Fallback path for audit logging when journald socket is unreachable.
-fn audit_fallback_path() -> PathBuf {
-    std::env::var("RUNTIME_DIRECTORY")
-        .map(PathBuf::from)
-        .unwrap_or_else(|_| PathBuf::from("/run/syntrop"))
-        .join("admin-audit.log")
 }
 
 /// Emits structured audit fields exclusively to systemd-journald.
@@ -57,72 +48,33 @@ pub fn log_admin_audit(
             let _ = datagram.send_to(payload.as_bytes(), sock);
         }
     }
-
-    let fallback = audit_fallback_path();
-    if let Some(parent) = fallback.parent() {
-        let _ = std::fs::create_dir_all(parent);
-    }
-    if let Ok(mut f) = OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(&fallback)
-    {
-        let record = serde_json::json!({
-            "INCIDENT_ID": incident_id,
-            "UNIT": unit,
-            "REMEDIATION_ACTION": action,
-            "RESULT": result,
-            "MESSAGE": message,
-            "__REALTIME_TIMESTAMP": std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .map(|d| d.as_micros().to_string())
-                .unwrap_or_default(),
-        });
-        let _ = writeln!(f, "{record}");
-    }
 }
 
-/// Queries forensic audit records from journald and the fallback log.
+/// Queries forensic audit records exclusively from systemd-journald.
 pub async fn query_admin_audit(
     unit: Option<&str>,
     limit: usize,
 ) -> Result<Vec<AdminAuditEntry>, SyntropctlError> {
     let mut entries = Vec::new();
 
-    let output = Command::new("journalctl")
-        .args([
-            "SYSLOG_IDENTIFIER=syntrop-admin",
-            "-o",
-            "json",
-            "-n",
-            &limit.to_string(),
-        ])
-        .output()
-        .await;
+    let mut cmd = Command::new("journalctl");
+    cmd.args([
+        "SYSLOG_IDENTIFIER=syntrop-admin",
+        "-o",
+        "json",
+        "-n",
+        &limit.to_string(),
+    ]);
+    if let Some(target_unit) = unit {
+        cmd.arg(format!("UNIT={target_unit}"));
+    }
 
-    if let Ok(out) = output {
+    if let Ok(out) = cmd.output().await {
         if out.status.success() {
             let cursor = std::io::Cursor::new(out.stdout);
             for line in cursor.lines().map_while(Result::ok) {
                 if let Ok(e) = serde_json::from_str::<AdminAuditEntry>(&line) {
                     if !e.action.is_empty() || !e.result.is_empty() {
-                        entries.push(e);
-                    }
-                }
-            }
-        }
-    }
-
-    let fallback = audit_fallback_path();
-    if fallback.exists() {
-        if let Ok(f) = File::open(&fallback) {
-            let reader = BufReader::new(f);
-            for line in reader.lines().map_while(Result::ok) {
-                if let Ok(e) = serde_json::from_str::<AdminAuditEntry>(&line) {
-                    let dup = entries.iter().any(|existing| {
-                        existing.incident_id == e.incident_id && existing.action == e.action
-                    });
-                    if !dup {
                         entries.push(e);
                     }
                 }

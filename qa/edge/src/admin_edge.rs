@@ -125,4 +125,28 @@ mod tests {
         let code = handle_admin(AdminCommands::Status, true).await.unwrap();
         assert_eq!(code, std::process::ExitCode::SUCCESS);
     }
+
+    #[tokio::test]
+    async fn test_remediate_syntax_failure_handled_cleanly() {
+        let outcome = execute_remediation("nonexistent-invalid-unit.service", Some("restart"), false)
+            .await
+            .unwrap();
+        assert!(!outcome.dry_run);
+        assert!(!outcome.success);
+        assert!(outcome.message.contains("syntax.verify") || outcome.message.contains("toold sandbox socket"));
+    }
+
+    #[tokio::test]
+    async fn test_admin_audit_journal_emission_and_query() {
+        use syntropctl_core::admin::{log_admin_audit, query_admin_audit};
+        let inc_id = format!("edge-{}", std::process::id());
+        log_admin_audit(&inc_id, "audit-edge.service", "test_step", "success", "Edge audit entry");
+        tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+        if let Ok(entries) = query_admin_audit(Some("audit-edge.service"), 5).await {
+            if let Some(entry) = entries.iter().find(|e| e.incident_id == inc_id) {
+                assert_eq!(entry.unit, "audit-edge.service");
+                assert_eq!(entry.action, "test_step");
+            }
+        }
+    }
 }

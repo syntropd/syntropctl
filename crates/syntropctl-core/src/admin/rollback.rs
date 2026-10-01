@@ -80,13 +80,26 @@ pub async fn execute_rollback(
     };
 
     let rollback_params = json!({ "rollback_id": target_id });
-    let res = VarlinkClient::call(
+    let res = match VarlinkClient::call(
         &toold_sock,
         "io.syntrop.Tool1.Rollback",
         Some(rollback_params),
         DEFAULT_RPC_TIMEOUT,
     )
-    .await?;
+    .await
+    {
+        Ok(r) => r,
+        Err(e) => {
+            log_admin_audit(
+                &format!("rb-{target_id}"),
+                unit,
+                "rollback",
+                "failure",
+                &format!("Failed to roll back state for {unit} using snapshot {target_id}: {e}"),
+            );
+            return Err(e);
+        }
+    };
 
     let restored = res.get("restored").ok_or_else(|| {
         SyntropctlError::MalformedReply("Missing 'restored' object in Rollback reply".into())

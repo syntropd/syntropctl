@@ -93,7 +93,7 @@ impl RemediationRecipe {
     pub fn auto(fault_class: &str, has_drift: bool) -> Self {
         let is_novel = fault_class.is_empty()
             || fault_class.eq_ignore_ascii_case("unknown")
-            || fault_class.eq_ignore_ascii_case("unclassified");
+            || fault_class.to_ascii_lowercase().starts_with("unclassified");
 
         if is_novel {
             Self {
