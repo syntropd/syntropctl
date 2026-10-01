@@ -87,6 +87,7 @@ async fn main() -> ExitCode {
             SensoryCommands::Presence => handle_presence(json).await.map(|_| ExitCode::SUCCESS),
         },
         Commands::Admin { command } => handle_admin(command, json).await,
+        Commands::Companion { command } => handle_companion(command, json).await,
     };
 
     match res {

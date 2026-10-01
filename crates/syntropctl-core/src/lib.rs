@@ -4,11 +4,18 @@
 //! and operations targeting the syntropd AI subsystem daemons.
 
 pub mod admin;
+pub mod companion;
 pub mod daemon;
 pub mod error;
 pub mod ops;
 pub mod sensory;
 pub mod varlink;
+
+pub use companion::{
+    ask_screen, click_mouse, execute_instruction, listen_session, move_mouse_abs, send_key,
+    type_text, ActuatorAction, CompanionAskResult, CompanionExecuteResult, CompanionListenEvent,
+    CompanionListenOptions, UiAction,
+};
 
 pub use admin::{
     execute_remediation, execute_rollback, log_admin_audit, query_admin_audit, query_admin_status,

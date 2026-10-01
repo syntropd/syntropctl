@@ -1,6 +1,7 @@
 //! CLI arguments and command definitions for syntropctl.
 
 use crate::cmd::admin::AdminCommands;
+use crate::cmd::companion::CompanionCommands;
 use clap::{Parser, Subcommand};
 use clap_complete::Shell;
 use std::path::PathBuf;
@@ -151,6 +152,12 @@ pub enum Commands {
     Admin {
         #[command(subcommand)]
         command: AdminCommands,
+    },
+
+    /// Linux Cognitive Desktop Companion multimodal assistance and desktop automation.
+    Companion {
+        #[command(subcommand)]
+        command: CompanionCommands,
     },
 }
 

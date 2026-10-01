@@ -1,11 +1,11 @@
 {
  "repo": "syntropctl",
- "rev": "80f140b",
- "dirty": false,
+ "rev": "bcfec44",
+ "dirty": true,
  "pages": [
   {
    "path": "./crates/syntropctl-cli/src/cli.rs",
-   "lines": 207,
+   "lines": 214,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 6
@@ -51,6 +51,34 @@
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-cli/src/cmd/companion/ask_cmd.rs",
+   "lines": 31,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-cli/src/cmd/companion/execute_cmd.rs",
+   "lines": 44,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-cli/src/cmd/companion/listen_cmd.rs",
+   "lines": 42,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-cli/src/cmd/companion/mod.rs",
+   "lines": 83,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 0
   },
   {
    "path": "./crates/syntropctl-cli/src/cmd/execute/embed_cmd.rs",
@@ -131,7 +159,7 @@
   },
   {
    "path": "./crates/syntropctl-cli/src/cmd/mod.rs",
-   "lines": 26,
+   "lines": 28,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 0
@@ -229,7 +257,7 @@
   },
   {
    "path": "./crates/syntropctl-cli/src/main.rs",
-   "lines": 108,
+   "lines": 109,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 0
@@ -291,6 +319,55 @@
    "reach": 3
   },
   {
+   "path": "./crates/syntropctl-core/src/companion/actuator.rs",
+   "lines": 112,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 2
+  },
+  {
+   "path": "./crates/syntropctl-core/src/companion/ask.rs",
+   "lines": 53,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 2
+  },
+  {
+   "path": "./crates/syntropctl-core/src/companion/execute.rs",
+   "lines": 178,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 3
+  },
+  {
+   "path": "./crates/syntropctl-core/src/companion/listen.rs",
+   "lines": 92,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 2
+  },
+  {
+   "path": "./crates/syntropctl-core/src/companion/mod.rs",
+   "lines": 26,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 0
+  },
+  {
+   "path": "./crates/syntropctl-core/src/companion/router_stream.rs",
+   "lines": 143,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 3
+  },
+  {
+   "path": "./crates/syntropctl-core/src/companion/safety.rs",
+   "lines": 74,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 2
+  },
+  {
    "path": "./crates/syntropctl-core/src/daemon/endpoint.rs",
    "lines": 140,
    "bin_bytes": null,
@@ -309,11 +386,11 @@
    "lines": 104,
    "bin_bytes": null,
    "heat_pct": null,
-   "reach": 21
+   "reach": 26
   },
   {
    "path": "./crates/syntropctl-core/src/lib.rs",
-   "lines": 28,
+   "lines": 35,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 0
@@ -460,7 +537,7 @@
   },
   {
    "path": "./qa/edge/src/argument_edge.rs",
-   "lines": 51,
+   "lines": 112,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 0
@@ -515,6 +592,13 @@
    "reach": 0
   },
   {
+   "path": "./qa/unit/src/companion_tests.rs",
+   "lines": 147,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 0
+  },
+  {
    "path": "./qa/unit/src/endpoint_tests.rs",
    "lines": 80,
    "bin_bytes": null,
@@ -530,7 +614,7 @@
   },
   {
    "path": "./qa/unit/src/lib.rs",
-   "lines": 12,
+   "lines": 14,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 0

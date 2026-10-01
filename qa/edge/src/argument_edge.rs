@@ -48,4 +48,65 @@ mod tests {
             _ => panic!("Expected Models command"),
         }
     }
+
+    #[test]
+    fn test_parse_companion_ask_without_display() {
+        let args = vec!["syntropctl", "companion", "ask", "inspect screen"];
+        let cli = Cli::try_parse_from(args).unwrap();
+        match cli.command {
+            Commands::Companion {
+                command: syntropctl_cli::cmd::companion::CompanionCommands::Ask { prompt, display },
+            } => {
+                assert_eq!(prompt, "inspect screen");
+                assert!(display.is_none());
+            }
+            _ => panic!("Expected Companion Ask"),
+        }
+    }
+
+    #[test]
+    fn test_parse_companion_execute_without_dry_run() {
+        let args = vec!["syntropctl", "companion", "execute", "type hello world"];
+        let cli = Cli::try_parse_from(args).unwrap();
+        match cli.command {
+            Commands::Companion {
+                command:
+                    syntropctl_cli::cmd::companion::CompanionCommands::Execute {
+                        instruction,
+                        dry_run,
+                    },
+            } => {
+                assert_eq!(instruction, "type hello world");
+                assert!(!dry_run);
+            }
+            _ => panic!("Expected Companion Execute"),
+        }
+    }
+
+    #[test]
+    fn test_parse_companion_listen_options() {
+        let args = vec![
+            "syntropctl",
+            "companion",
+            "listen",
+            "--hotkey",
+            "Ctrl+Alt+T",
+        ];
+        let cli = Cli::try_parse_from(args).unwrap();
+        match cli.command {
+            Commands::Companion {
+                command:
+                    syntropctl_cli::cmd::companion::CompanionCommands::Listen {
+                        voice,
+                        hotkey,
+                        once,
+                    },
+            } => {
+                assert!(!voice);
+                assert_eq!(hotkey.as_deref(), Some("Ctrl+Alt+T"));
+                assert!(!once);
+            }
+            _ => panic!("Expected Companion Listen"),
+        }
+    }
 }

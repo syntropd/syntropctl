@@ -81,7 +81,36 @@ syntropctl sensory frame [--device <device>] [--width <px>] [--height <px>] [--o
 # Capture screen
 syntropctl sensory screen [--display <display>] [--out <file>]
 
-# Query operator presence
-syntropctl sensory presence [--json]
+### 12. `admin`
+Autonomous OS self-healing, remediation recipes, and circuit breaker management.
+
+```bash
+# Check autonomous healing status
+syntropctl admin status [--json]
+
+# Remediate a failed systemd unit
+syntropctl admin remediate <UNIT> [--recipe <RECIPE>] [--dry-run]
+
+# Roll back prior remediation mutations
+syntropctl admin rollback <UNIT> [--snapshot <ID>]
+
+# Inspect forensic journal audit trail
+syntropctl admin audit [--unit <UNIT>] [--limit <N>]
+
+# Reset circuit-breaker lockout state
+syntropctl admin lockout reset <UNIT>
 ```
 
+### 13. `companion`
+Linux Cognitive Desktop Companion multimodal visual reasoning, macro actuation, and ambient listening.
+
+```bash
+# Ask a grounded visual question about the active screen
+syntropctl companion ask "<prompt>" [--display <display>] [--json]
+
+# Plan and execute desktop UI actions via virtual HID actuator
+syntropctl companion execute "<instruction>" [--dry-run] [--json]
+
+# Run daemonized ambient listening session for voice or hotkey triggers
+syntropctl companion listen [--voice] [--hotkey <key>] [--once] [--json]
+```
