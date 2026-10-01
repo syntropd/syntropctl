@@ -25,6 +25,7 @@ anyhow = "1.0"
 tracing = "0.1"
 tracing-subscriber = "0.3"
 rustix = { version = "0.38", features = ["termios", "fs", "process", "stdio"] }
+base64 = "0.22"
 
 [profile.release]
 # Thin LTO + stripped symbols: smaller, faster binaries, portable x86-64.

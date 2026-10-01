@@ -9,4 +9,7 @@ pub mod handler_edge;
 #[cfg(test)]
 pub mod protocol_edge;
 #[cfg(test)]
+pub mod sensory_edge;
+#[cfg(test)]
 pub mod socket_edge;
+

@@ -67,3 +67,21 @@ Generate shell auto-completion script for bash, zsh, or fish.
 ```bash
 syntropctl completions <SHELL>
 ```
+
+### 11. `sensory`
+Query environmental awareness, ambient sensing, and operator presence via `io.syntrop.Sensory1`.
+
+```bash
+# Capture audio PCM
+syntropctl sensory audio [--duration-ms <ms>] [--sample-rate <hz>] [--out <file>]
+
+# Capture video frame
+syntropctl sensory frame [--device <device>] [--width <px>] [--height <px>] [--out <file>]
+
+# Capture screen
+syntropctl sensory screen [--display <display>] [--out <file>]
+
+# Query operator presence
+syntropctl sensory presence [--json]
+```
+

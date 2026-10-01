@@ -2,8 +2,9 @@
 
 use clap::Parser;
 use std::process::ExitCode;
-use syntropctl_cli::cli::{Cli, Commands};
+use syntropctl_cli::cli::{Cli, Commands, SensoryCommands};
 use syntropctl_cli::cmd::*;
+
 
 #[tokio::main]
 async fn main() -> ExitCode {
@@ -50,7 +51,33 @@ async fn main() -> ExitCode {
         Commands::Audit { unit, limit } => handle_audit(unit.as_deref(), limit, json)
             .await
             .map(|_| ExitCode::SUCCESS),
+        Commands::Sensory { command } => match command {
+            SensoryCommands::Audio {
+                duration_ms,
+                sample_rate,
+                out,
+            } => handle_audio(duration_ms, sample_rate, out.as_deref(), json)
+                .await
+                .map(|_| ExitCode::SUCCESS),
+            SensoryCommands::Frame {
+                device,
+                width,
+                height,
+                out,
+            } => handle_frame(device.as_deref(), width, height, out.as_deref(), json)
+                .await
+                .map(|_| ExitCode::SUCCESS),
+            SensoryCommands::Screen { display, out } => {
+                handle_screen(display.as_deref(), out.as_deref(), json)
+                    .await
+                    .map(|_| ExitCode::SUCCESS)
+            }
+            SensoryCommands::Presence => {
+                handle_presence(json).await.map(|_| ExitCode::SUCCESS)
+            }
+        },
     };
+
 
     match res {
         Ok(code) => code,

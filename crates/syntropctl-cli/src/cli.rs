@@ -1,7 +1,9 @@
 //! CLI arguments and command definitions for syntropctl.
 
+use std::path::PathBuf;
 use clap::{Parser, Subcommand};
 use clap_complete::Shell;
+
 
 /// Unified administration and diagnostic CLI for the syntropd subsystem.
 #[derive(Parser, Debug)]
@@ -138,4 +140,63 @@ pub enum Commands {
         #[arg(short = 'n', long = "limit", default_value = "50")]
         limit: usize,
     },
+
+    /// Environmental sensing and operator presence queries.
+    Sensory {
+        #[command(subcommand)]
+        command: SensoryCommands,
+    },
 }
+
+/// Subcommands for environmental sensing operations.
+#[derive(Subcommand, Debug)]
+pub enum SensoryCommands {
+    /// Record ambient audio PCM from default input source.
+    Audio {
+        /// Recording duration in milliseconds.
+        #[arg(long = "duration-ms")]
+        duration_ms: Option<u32>,
+
+        /// Sampling frequency in Hz (e.g. 16000).
+        #[arg(long = "sample-rate")]
+        sample_rate: Option<u32>,
+
+        /// Optional output file path to write captured PCM bytes.
+        #[arg(long = "out")]
+        out: Option<PathBuf>,
+    },
+
+    /// Capture video frame via V4L2 device.
+    Frame {
+        /// Video device path (e.g., /dev/video0).
+        #[arg(long = "device")]
+        device: Option<String>,
+
+        /// Frame width in pixels.
+        #[arg(long = "width")]
+        width: Option<u32>,
+
+        /// Frame height in pixels.
+        #[arg(long = "height")]
+        height: Option<u32>,
+
+        /// Optional output file path to write captured frame image.
+        #[arg(long = "out")]
+        out: Option<PathBuf>,
+    },
+
+    /// Capture desktop screen image buffer.
+    Screen {
+        /// Target display identifier (e.g. :0, wayland-0).
+        #[arg(long = "display")]
+        display: Option<String>,
+
+        /// Optional output file path to write captured screen image.
+        #[arg(long = "out")]
+        out: Option<PathBuf>,
+    },
+
+    /// Query composite operator presence estimation.
+    Presence,
+}
+
