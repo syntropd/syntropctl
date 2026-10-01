@@ -64,11 +64,7 @@ fn format_timestamp(raw: &str) -> String {
 }
 
 /// Queries structured audit entries from journald and fallback file.
-pub async fn handle_audit(
-    unit: Option<&str>,
-    limit: usize,
-    json: bool,
-) -> anyhow::Result<()> {
+pub async fn handle_audit(unit: Option<&str>, limit: usize, json: bool) -> anyhow::Result<()> {
     let mut entries = Vec::new();
 
     // 1. Try querying journalctl
@@ -147,12 +143,7 @@ pub async fn handle_audit(
             let time_str = format_timestamp(&e.timestamp);
             println!(
                 "{:<24} {:<20} {:<8} {:<16} {:<16} {:<8}",
-                time_str,
-                e.unit,
-                e.tier,
-                e.action,
-                e.status,
-                conf_str
+                time_str, e.unit, e.tier, e.action, e.status, conf_str
             );
         }
     }
@@ -176,7 +167,10 @@ mod tests {
     #[test]
     fn test_format_timestamp_varieties() {
         assert_eq!(format_timestamp(""), "-");
-        assert_eq!(format_timestamp("2026-09-30T15:28:00Z"), "2026-09-30 15:28:00");
+        assert_eq!(
+            format_timestamp("2026-09-30T15:28:00Z"),
+            "2026-09-30 15:28:00"
+        );
         assert_eq!(format_timestamp("0"), "1970-01-01 00:00:00");
     }
 }

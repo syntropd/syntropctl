@@ -1,7 +1,7 @@
 //! Frame capture command handler.
 
-use std::path::Path;
 use anyhow::Result;
+use std::path::Path;
 use syntropctl_core::sensory::capture_frame;
 
 use crate::format::print_json;

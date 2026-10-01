@@ -58,7 +58,10 @@ mod tests {
     fn test_environment_variable_socket_override() {
         let ep = DaemonEndpoint::from_name("runtimed").unwrap();
         let default_path = ep.socket_path();
-        assert_eq!(default_path, PathBuf::from("/run/syntrop/io.syntrop.Runtime1"));
+        assert_eq!(
+            default_path,
+            PathBuf::from("/run/syntrop/io.syntrop.Runtime1")
+        );
 
         std::env::set_var("SYNTROP_RUNTIMED_SOCKET", "/tmp/custom_runtime.sock");
         let custom_path = ep.socket_path();
@@ -66,7 +69,10 @@ mod tests {
         std::env::remove_var("SYNTROP_RUNTIMED_SOCKET");
 
         let ep_r = DaemonEndpoint::from_name("routerd").unwrap();
-        assert_eq!(ep_r.socket_path(), PathBuf::from("/run/syntrop/io.syntrop.Router1"));
+        assert_eq!(
+            ep_r.socket_path(),
+            PathBuf::from("/run/syntrop/io.syntrop.Router1")
+        );
         std::env::set_var("SYNTROP_ROUTER_SOCKET", "/tmp/custom_router.sock");
         assert_eq!(ep_r.socket_path(), PathBuf::from("/tmp/custom_router.sock"));
         std::env::remove_var("SYNTROP_ROUTER_SOCKET");

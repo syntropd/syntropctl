@@ -70,7 +70,11 @@ pub async fn query_composite_leases() -> Result<Vec<CompositeLeaseStatus>, Syntr
                 .and_then(|v| v.as_str())
                 .unwrap_or("")
                 .to_string();
-            let gang_id = l.get("gang_id").and_then(|v| v.as_str()).unwrap_or("").to_string();
+            let gang_id = l
+                .get("gang_id")
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .to_string();
             let gang_policy = l
                 .get("gang_policy")
                 .or_else(|| l.get("policy"))
@@ -81,15 +85,29 @@ pub async fn query_composite_leases() -> Result<Vec<CompositeLeaseStatus>, Syntr
             let mut slices = Vec::new();
             if let Some(s_arr) = l.get("slices").and_then(|v| v.as_array()) {
                 for s in s_arr {
-                    let plane_id = s.get("plane_id").and_then(|v| v.as_str()).unwrap_or("").to_string();
-                    let role = s.get("role").and_then(|v| v.as_str()).unwrap_or("Standalone").to_string();
-                    let stage_index = s.get("stage_index").and_then(|v| v.as_u64()).map(|v| v as usize);
+                    let plane_id = s
+                        .get("plane_id")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("")
+                        .to_string();
+                    let role = s
+                        .get("role")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("Standalone")
+                        .to_string();
+                    let stage_index = s
+                        .get("stage_index")
+                        .and_then(|v| v.as_u64())
+                        .map(|v| v as usize);
                     let memory_bytes = s
                         .get("memory_bytes")
                         .or_else(|| s.get("allocated_memory"))
                         .and_then(|v| v.as_u64())
                         .unwrap_or(0);
-                    let device_path = s.get("device_path").and_then(|v| v.as_str()).map(|x| x.to_string());
+                    let device_path = s
+                        .get("device_path")
+                        .and_then(|v| v.as_str())
+                        .map(|x| x.to_string());
                     slices.push(CompositeSliceItem {
                         plane_id,
                         role,
@@ -133,6 +151,9 @@ mod tests {
         };
         assert_eq!(lease.lease_id, "lease-101");
         assert_eq!(lease.slices[0].stage_index, Some(0));
-        assert_eq!(lease.slices[0].device_path.as_deref(), Some("/dev/dri/renderD128"));
+        assert_eq!(
+            lease.slices[0].device_path.as_deref(),
+            Some("/dev/dri/renderD128")
+        );
     }
 }

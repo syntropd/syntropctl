@@ -67,10 +67,26 @@ pub async fn query_devices() -> Result<Vec<DeviceReport>, SyntropctlError> {
     let mut devices = Vec::new();
     if let Some(devs) = res.get("devices").and_then(|v| v.as_array()) {
         for d in devs {
-            let id = d.get("id").and_then(|v| v.as_str()).unwrap_or("unknown").to_string();
-            let dtype = d.get("type").and_then(|v| v.as_str()).unwrap_or("cpu").to_string();
-            let vendor = d.get("vendor").and_then(|v| v.as_str()).unwrap_or("").to_string();
-            let model = d.get("model").and_then(|v| v.as_str()).unwrap_or("").to_string();
+            let id = d
+                .get("id")
+                .and_then(|v| v.as_str())
+                .unwrap_or("unknown")
+                .to_string();
+            let dtype = d
+                .get("type")
+                .and_then(|v| v.as_str())
+                .unwrap_or("cpu")
+                .to_string();
+            let vendor = d
+                .get("vendor")
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .to_string();
+            let model = d
+                .get("model")
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .to_string();
             let mem_total = d.get("memory_total").and_then(|v| v.as_u64()).unwrap_or(0);
             let mem_used = d.get("memory_used").and_then(|v| v.as_u64()).unwrap_or(0);
             let mem_avail = d
@@ -82,8 +98,15 @@ pub async fn query_devices() -> Result<Vec<DeviceReport>, SyntropctlError> {
             } else {
                 0.0
             };
-            let psi = d.get("psi_pressure").and_then(|v| v.as_f64()).unwrap_or(0.0) as f32;
-            let status = d.get("status").and_then(|v| v.as_str()).unwrap_or("ready").to_string();
+            let psi = d
+                .get("psi_pressure")
+                .and_then(|v| v.as_f64())
+                .unwrap_or(0.0) as f32;
+            let status = d
+                .get("status")
+                .and_then(|v| v.as_str())
+                .unwrap_or("ready")
+                .to_string();
             let p2p_links = d
                 .get("p2p_links")
                 .and_then(|v| serde_json::from_value::<Vec<DeviceP2pLink>>(v.clone()).ok());
@@ -104,12 +127,30 @@ pub async fn query_devices() -> Result<Vec<DeviceReport>, SyntropctlError> {
         }
     } else if let Some(planes) = res.get("planes").and_then(|v| v.as_array()) {
         for p in planes {
-            let id = p.get("id").and_then(|v| v.as_str()).unwrap_or("unknown").to_string();
-            let dtype = p.get("kind").and_then(|v| v.as_str()).unwrap_or("compute").to_string();
-            let name = p.get("name").and_then(|v| v.as_str()).unwrap_or("").to_string();
+            let id = p
+                .get("id")
+                .and_then(|v| v.as_str())
+                .unwrap_or("unknown")
+                .to_string();
+            let dtype = p
+                .get("kind")
+                .and_then(|v| v.as_str())
+                .unwrap_or("compute")
+                .to_string();
+            let name = p
+                .get("name")
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .to_string();
             let mem_total = p.get("total_memory").and_then(|v| v.as_u64()).unwrap_or(0);
-            let mem_avail = p.get("available_memory").and_then(|v| v.as_u64()).unwrap_or(0);
-            let kernel_used = p.get("kernel_used_memory").and_then(|v| v.as_u64()).unwrap_or(0);
+            let mem_avail = p
+                .get("available_memory")
+                .and_then(|v| v.as_u64())
+                .unwrap_or(0);
+            let kernel_used = p
+                .get("kernel_used_memory")
+                .and_then(|v| v.as_u64())
+                .unwrap_or(0);
             let mem_used = if kernel_used > 0 {
                 kernel_used
             } else {
@@ -123,7 +164,11 @@ pub async fn query_devices() -> Result<Vec<DeviceReport>, SyntropctlError> {
             let p2p_links = p
                 .get("p2p_links")
                 .and_then(|v| serde_json::from_value::<Vec<DeviceP2pLink>>(v.clone()).ok());
-            let status = if p.get("is_triage_reserved").and_then(|v| v.as_bool()).unwrap_or(false) {
+            let status = if p
+                .get("is_triage_reserved")
+                .and_then(|v| v.as_bool())
+                .unwrap_or(false)
+            {
                 "triage-reserved".to_string()
             } else {
                 "ready".to_string()

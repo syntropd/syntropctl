@@ -47,10 +47,22 @@ pub async fn query_drift(unit: Option<&str>) -> Result<Vec<DriftEvent>, Syntropc
     let mut events = Vec::new();
     if let Some(evs) = res.get("events").and_then(|v| v.as_array()) {
         for e in evs {
-            let path = e.get("unit").and_then(|v| v.as_str()).unwrap_or("-").to_string();
-            let ctype = e.get("source").and_then(|v| v.as_str()).unwrap_or("event").to_string();
+            let path = e
+                .get("unit")
+                .and_then(|v| v.as_str())
+                .unwrap_or("-")
+                .to_string();
+            let ctype = e
+                .get("source")
+                .and_then(|v| v.as_str())
+                .unwrap_or("event")
+                .to_string();
             let ts = e.get("timestamp_us").and_then(|v| v.as_u64()).unwrap_or(0);
-            let details = e.get("summary").and_then(|v| v.as_str()).unwrap_or("").to_string();
+            let details = e
+                .get("summary")
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .to_string();
 
             events.push(DriftEvent {
                 path,

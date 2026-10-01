@@ -78,7 +78,9 @@ mod tests {
             confidence: 0.98,
             recommended_action: "Free disk space or resize filesystem".to_string(),
             remediation_command: Some("journalctl --vacuum-size=500M".to_string()),
-            journal_slice: vec!["FATAL: could not write to file: No space left on device".to_string()],
+            journal_slice: vec![
+                "FATAL: could not write to file: No space left on device".to_string()
+            ],
             recent_drift: vec!["Disk usage exceeded 99%".to_string()],
         };
 

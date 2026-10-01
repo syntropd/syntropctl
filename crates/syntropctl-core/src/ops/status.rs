@@ -142,7 +142,11 @@ mod tests {
         server.await.unwrap();
         std::env::remove_var("SYNTROP_TEST_STATUS_SOCK");
         let _ = std::fs::remove_file(&path);
-        assert!(status.responsive, "retry should catch the cold daemon: {:?}", status.error_message);
+        assert!(
+            status.responsive,
+            "retry should catch the cold daemon: {:?}",
+            status.error_message
+        );
         assert_eq!(status.product.as_deref(), Some("p"));
     }
 }

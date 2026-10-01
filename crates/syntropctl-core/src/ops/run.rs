@@ -50,10 +50,24 @@ pub async fn execute_sandboxed_tool(
     .await?;
 
     let inner = res.get("result").unwrap_or(&res);
-    let exit_code = inner.get("exit_code").and_then(|v| v.as_i64()).unwrap_or(-1) as i32;
-    let stdout = inner.get("stdout").and_then(|v| v.as_str()).unwrap_or("").to_string();
-    let stderr = inner.get("stderr").and_then(|v| v.as_str()).unwrap_or("").to_string();
-    let duration_ms = inner.get("duration_ms").and_then(|v| v.as_u64()).unwrap_or(0);
+    let exit_code = inner
+        .get("exit_code")
+        .and_then(|v| v.as_i64())
+        .unwrap_or(-1) as i32;
+    let stdout = inner
+        .get("stdout")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_string();
+    let stderr = inner
+        .get("stderr")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_string();
+    let duration_ms = inner
+        .get("duration_ms")
+        .and_then(|v| v.as_u64())
+        .unwrap_or(0);
 
     Ok(ToolRunResult {
         exit_code,

@@ -5,7 +5,6 @@ use syntropctl_core::ops::{
     DaemonStatus, DeviceReport, DriftEvent, IncidentReport, ModelEntry, StorageStats,
 };
 
-
 /// Serialize and print data structure as formatted JSON.
 pub fn print_json<T: Serialize>(value: &T) {
     match serde_json::to_string_pretty(value) {
@@ -38,11 +37,7 @@ pub fn print_status_table(statuses: &[DaemonStatus]) {
         let prod_label = match (&s.product, &s.version) {
             (Some(p), Some(v)) => format!("{} v{}", p, v),
             (Some(p), None) => p.clone(),
-            _ => s
-                .error_message
-                .as_deref()
-                .unwrap_or("-")
-                .to_string(),
+            _ => s.error_message.as_deref().unwrap_or("-").to_string(),
         };
 
         println!(
@@ -121,7 +116,6 @@ fn print_cas_quota(stats: &StorageStats) {
         stats.pinned_count
     );
 }
-
 
 /// Print hardware devices and accelerators table.
 pub fn print_devices_table(devices: &[DeviceReport]) {

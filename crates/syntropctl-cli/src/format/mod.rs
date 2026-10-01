@@ -9,4 +9,3 @@ pub use print_output::print_json;
 pub use print_output::print_models_table;
 pub use print_output::print_models_table_with_stats;
 pub use print_output::print_status_table;
-

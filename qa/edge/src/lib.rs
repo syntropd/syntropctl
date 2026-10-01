@@ -12,4 +12,3 @@ pub mod protocol_edge;
 pub mod sensory_edge;
 #[cfg(test)]
 pub mod socket_edge;
-

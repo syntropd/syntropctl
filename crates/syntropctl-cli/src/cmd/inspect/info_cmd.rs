@@ -14,7 +14,11 @@ pub async fn handle_info(daemon: Option<String>, json: bool) -> Result<()> {
             })?;
             let sock = ep.socket_path();
             if !sock.exists() {
-                anyhow::bail!("Daemon '{}' socket not found at {}", ep.name, sock.display());
+                anyhow::bail!(
+                    "Daemon '{}' socket not found at {}",
+                    ep.name,
+                    sock.display()
+                );
             }
 
             let info = VarlinkClient::get_info(&sock).await?;
@@ -53,7 +57,10 @@ pub async fn handle_info(daemon: Option<String>, json: bool) -> Result<()> {
                 let sock = ep.socket_path();
                 if sock.exists() {
                     if let Ok(info) = VarlinkClient::get_info(&sock).await {
-                        println!("Daemon: {:<12} | Product: {:<16} | Version: {}", ep.name, info.product, info.version);
+                        println!(
+                            "Daemon: {:<12} | Product: {:<16} | Version: {}",
+                            ep.name, info.product, info.version
+                        );
                         for iface in &info.interfaces {
                             println!("    * {}", iface);
                         }

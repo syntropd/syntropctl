@@ -1,12 +1,11 @@
 //! Environmental sensing operations communicating with Sensory1 interface.
 
-pub mod ops;
+pub mod audio;
+pub mod endpoint;
+pub mod presence;
+pub mod visual;
 
-pub use ops::capture_audio;
-pub use ops::capture_frame;
-pub use ops::capture_screen;
-pub use ops::get_operator_presence;
-pub use ops::sensory_socket_path;
-pub use ops::AudioCaptureResult;
-pub use ops::ImageCaptureResult;
-pub use ops::OperatorPresenceResult;
+pub use audio::{capture_audio, AudioCaptureResult};
+pub use endpoint::sensory_socket_path;
+pub use presence::{get_operator_presence, OperatorPresenceResult};
+pub use visual::{capture_frame, capture_screen, ImageCaptureResult};

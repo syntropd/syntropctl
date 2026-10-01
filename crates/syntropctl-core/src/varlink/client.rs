@@ -55,13 +55,13 @@ impl VarlinkClient {
         parameters: Option<serde_json::Value>,
         timeout_dur: Duration,
     ) -> Result<serde_json::Value, SyntropctlError> {
-        let stream = UnixStream::connect(socket_path)
-            .await
-            .map_err(|e| SyntropctlError::DaemonUnavailable {
+        let stream = UnixStream::connect(socket_path).await.map_err(|e| {
+            SyntropctlError::DaemonUnavailable {
                 daemon: method.split('.').next().unwrap_or("daemon").to_string(),
                 socket: socket_path.to_path_buf(),
                 source: e,
-            })?;
+            }
+        })?;
 
         let (mut reader, mut writer) = stream.into_split();
 

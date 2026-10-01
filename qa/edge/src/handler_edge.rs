@@ -48,15 +48,23 @@ mod tests {
         pin_all_sockets_missing();
         let err = handle_run("uname", &[], None, false).await.unwrap_err();
         assert!(err.to_string().contains("toold"), "{err}");
-        assert!(handle_run("uname", &["-a".to_string()], Some("strict"), true).await.is_err());
+        assert!(
+            handle_run("uname", &["-a".to_string()], Some("strict"), true)
+                .await
+                .is_err()
+        );
     }
 
     #[tokio::test]
     async fn test_generate_fails_without_runtimed() {
         pin_all_sockets_missing();
-        let err = handle_generate("hello", "tiny", 8, 0.0, None, false).await.unwrap_err();
+        let err = handle_generate("hello", "tiny", 8, 0.0, None, false)
+            .await
+            .unwrap_err();
         assert!(err.to_string().contains("runtimed"), "{err}");
-        assert!(handle_generate("hello", "tiny", 8, 0.0, None, true).await.is_err());
+        assert!(handle_generate("hello", "tiny", 8, 0.0, None, true)
+            .await
+            .is_err());
     }
 
     #[tokio::test]
@@ -72,9 +80,14 @@ mod tests {
         pin_all_sockets_missing();
         assert!(handle_explain("caddy.service", false).await.is_ok());
         assert!(handle_explain("caddy.service", true).await.is_ok());
-        let report = syntropctl_core::ops::explain_unit("caddy.service").await.unwrap();
+        let report = syntropctl_core::ops::explain_unit("caddy.service")
+            .await
+            .unwrap();
         assert_eq!(report.unit, "caddy.service");
-        assert_eq!(report.root_cause, "No active failure record found in sentry.");
+        assert_eq!(
+            report.root_cause,
+            "No active failure record found in sentry."
+        );
         assert!(report.recent_drift.is_empty());
         assert!(report.journal_slice.is_empty());
     }
@@ -92,8 +105,12 @@ mod tests {
         pin_all_sockets_missing();
         assert!(handle_status(None, false).await.is_ok());
         assert!(handle_status(None, true).await.is_ok());
-        assert!(handle_status(Some("runtimed".to_string()), true).await.is_ok());
-        let err = handle_status(Some("bogus-daemon".to_string()), false).await.unwrap_err();
+        assert!(handle_status(Some("runtimed".to_string()), true)
+            .await
+            .is_ok());
+        let err = handle_status(Some("bogus-daemon".to_string()), false)
+            .await
+            .unwrap_err();
         assert!(err.to_string().contains("Unknown daemon"), "{err}");
     }
 
@@ -102,9 +119,16 @@ mod tests {
         pin_all_sockets_missing();
         assert!(handle_info(None, false).await.is_ok());
         assert!(handle_info(None, true).await.is_ok());
-        let unknown = handle_info(Some("bogus-daemon".to_string()), false).await.unwrap_err();
+        let unknown = handle_info(Some("bogus-daemon".to_string()), false)
+            .await
+            .unwrap_err();
         assert!(unknown.to_string().contains("Unknown daemon"), "{unknown}");
-        let missing = handle_info(Some("runtimed".to_string()), true).await.unwrap_err();
-        assert!(missing.to_string().contains("socket not found"), "{missing}");
+        let missing = handle_info(Some("runtimed".to_string()), true)
+            .await
+            .unwrap_err();
+        assert!(
+            missing.to_string().contains("socket not found"),
+            "{missing}"
+        );
     }
 }

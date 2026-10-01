@@ -66,11 +66,29 @@ pub async fn query_cluster_status() -> Result<ClusterStatusReport, SyntropctlErr
 
     if let Some(nodes_arr) = res.get("cluster_nodes").and_then(|v| v.as_array()) {
         for n in nodes_arr {
-            let id = n.get("id").and_then(|v| v.as_str()).unwrap_or("unknown").to_string();
-            let address = n.get("address").and_then(|v| v.as_str()).unwrap_or("").to_string();
-            let status = n.get("status").and_then(|v| v.as_str()).unwrap_or("active").to_string();
-            let total = n.get("total_vram_bytes").and_then(|v| v.as_u64()).unwrap_or(0);
-            let avail = n.get("available_vram_bytes").and_then(|v| v.as_u64()).unwrap_or(0);
+            let id = n
+                .get("id")
+                .and_then(|v| v.as_str())
+                .unwrap_or("unknown")
+                .to_string();
+            let address = n
+                .get("address")
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .to_string();
+            let status = n
+                .get("status")
+                .and_then(|v| v.as_str())
+                .unwrap_or("active")
+                .to_string();
+            let total = n
+                .get("total_vram_bytes")
+                .and_then(|v| v.as_u64())
+                .unwrap_or(0);
+            let avail = n
+                .get("available_vram_bytes")
+                .and_then(|v| v.as_u64())
+                .unwrap_or(0);
             let latency = n.get("latency_ms").and_then(|v| v.as_u64()).unwrap_or(0) as u32;
 
             if status == "active" || status == "Active" {

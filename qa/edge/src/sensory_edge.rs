@@ -10,7 +10,6 @@ mod tests {
     use syntropctl_cli::cli::{Cli, Commands, SensoryCommands};
     use syntropctl_core::sensory::*;
 
-
     #[test]
     fn test_parse_sensory_audio_args() {
         let args = vec![
@@ -85,8 +84,11 @@ mod tests {
         }
     }
 
+    static ENV_LOCK: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
+
     #[tokio::test]
     async fn test_sensory_fails_when_socket_missing() {
+        let _guard = ENV_LOCK.lock().await;
         let missing = std::env::temp_dir().join(format!("no-sensory-{}.sock", std::process::id()));
         std::env::set_var("SYNTROP_SENSORY_SOCKET", &missing);
 
@@ -100,7 +102,9 @@ mod tests {
 
     #[tokio::test]
     async fn test_mock_sensory_presence_and_audio() {
-        let sock_path = std::env::temp_dir().join(format!("mock-sensory-{}.sock", std::process::id()));
+        let _guard = ENV_LOCK.lock().await;
+        let sock_path =
+            std::env::temp_dir().join(format!("mock-sensory-{}.sock", std::process::id()));
         let _ = std::fs::remove_file(&sock_path);
         let listener = UnixListener::bind(&sock_path).unwrap();
         std::env::set_var("SYNTROP_SENSORY_SOCKET", &sock_path);

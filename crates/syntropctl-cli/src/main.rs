@@ -5,7 +5,6 @@ use std::process::ExitCode;
 use syntropctl_cli::cli::{Cli, Commands, SensoryCommands};
 use syntropctl_cli::cmd::*;
 
-
 #[tokio::main]
 async fn main() -> ExitCode {
     let cli = Cli::parse();
@@ -23,7 +22,9 @@ async fn main() -> ExitCode {
         Commands::Explain { unit } => handle_explain(&unit, json).await.map(|_| ExitCode::SUCCESS),
         Commands::Models => handle_models(json).await.map(|_| ExitCode::SUCCESS),
         Commands::Devices => handle_devices(json).await.map(|_| ExitCode::SUCCESS),
-        Commands::Drift { unit } => handle_drift(unit.as_deref(), json).await.map(|_| ExitCode::SUCCESS),
+        Commands::Drift { unit } => handle_drift(unit.as_deref(), json)
+            .await
+            .map(|_| ExitCode::SUCCESS),
         Commands::Run {
             tool,
             profile,
@@ -35,18 +36,29 @@ async fn main() -> ExitCode {
             max_tokens,
             temperature,
             effort,
-        } => handle_generate(&prompt, &model, max_tokens, temperature, effort.as_deref(), json)
+        } => handle_generate(
+            &prompt,
+            &model,
+            max_tokens,
+            temperature,
+            effort.as_deref(),
+            json,
+        )
+        .await
+        .map(|_| ExitCode::SUCCESS),
+        Commands::Embed { text, model } => handle_embed(&text, &model, json)
             .await
             .map(|_| ExitCode::SUCCESS),
-        Commands::Embed { text, model } => handle_embed(&text, &model, json).await.map(|_| ExitCode::SUCCESS),
         Commands::Info { daemon } => handle_info(daemon, json).await.map(|_| ExitCode::SUCCESS),
         Commands::Completions { shell } => {
             handle_completions(shell);
             Ok(ExitCode::SUCCESS)
         }
-        Commands::Decide { approve, reject } => handle_decide(approve.as_deref(), reject.as_deref(), json)
-            .await
-            .map(|_| ExitCode::SUCCESS),
+        Commands::Decide { approve, reject } => {
+            handle_decide(approve.as_deref(), reject.as_deref(), json)
+                .await
+                .map(|_| ExitCode::SUCCESS)
+        }
         Commands::Prompt { raw } => handle_prompt(raw).map(|_| ExitCode::SUCCESS),
         Commands::Audit { unit, limit } => handle_audit(unit.as_deref(), limit, json)
             .await
@@ -72,12 +84,9 @@ async fn main() -> ExitCode {
                     .await
                     .map(|_| ExitCode::SUCCESS)
             }
-            SensoryCommands::Presence => {
-                handle_presence(json).await.map(|_| ExitCode::SUCCESS)
-            }
+            SensoryCommands::Presence => handle_presence(json).await.map(|_| ExitCode::SUCCESS),
         },
     };
-
 
     match res {
         Ok(code) => code,

@@ -17,7 +17,10 @@ pub async fn handle_presence(json: bool) -> Result<()> {
     } else {
         let pct = (res.confidence * 100.0).clamp(0.0, 100.0);
         let presence_str = if res.present { "Present" } else { "Absent" };
-        println!("Operator Presence: {} (confidence: {:.1}%)", presence_str, pct);
+        println!(
+            "Operator Presence: {} (confidence: {:.1}%)",
+            presence_str, pct
+        );
         println!("Detection Heuristic: {}", res.reason);
     }
 

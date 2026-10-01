@@ -1,9 +1,8 @@
 //! CLI arguments and command definitions for syntropctl.
 
-use std::path::PathBuf;
 use clap::{Parser, Subcommand};
 use clap_complete::Shell;
-
+use std::path::PathBuf;
 
 /// Unified administration and diagnostic CLI for the syntropd subsystem.
 #[derive(Parser, Debug)]
@@ -199,4 +198,3 @@ pub enum SensoryCommands {
     /// Query composite operator presence estimation.
     Presence,
 }
-

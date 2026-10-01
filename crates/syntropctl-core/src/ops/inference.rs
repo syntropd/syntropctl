@@ -2,7 +2,7 @@
 
 use crate::daemon::DaemonEndpoint;
 use crate::error::SyntropctlError;
-use crate::varlink::{GENERATE_RPC_TIMEOUT, VarlinkClient};
+use crate::varlink::{VarlinkClient, GENERATE_RPC_TIMEOUT};
 use serde::{Deserialize, Serialize};
 
 /// Result of text generation from runtimed.
@@ -57,11 +57,28 @@ pub async fn generate_text(
         SyntropctlError::MalformedReply("Missing 'result' object in Generate reply".into())
     })?;
 
-    let text = inner.get("text").and_then(|v| v.as_str()).unwrap_or("").to_string();
-    let prompt_tokens = inner.get("prompt_tokens").and_then(|v| v.as_u64()).unwrap_or(0) as usize;
-    let completion_tokens = inner.get("completion_tokens").and_then(|v| v.as_u64()).unwrap_or(0) as usize;
-    let finish_reason = inner.get("finish_reason").and_then(|v| v.as_str()).unwrap_or("stop").to_string();
-    let duration_ms = inner.get("duration_ms").and_then(|v| v.as_u64()).unwrap_or(0);
+    let text = inner
+        .get("text")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_string();
+    let prompt_tokens = inner
+        .get("prompt_tokens")
+        .and_then(|v| v.as_u64())
+        .unwrap_or(0) as usize;
+    let completion_tokens = inner
+        .get("completion_tokens")
+        .and_then(|v| v.as_u64())
+        .unwrap_or(0) as usize;
+    let finish_reason = inner
+        .get("finish_reason")
+        .and_then(|v| v.as_str())
+        .unwrap_or("stop")
+        .to_string();
+    let duration_ms = inner
+        .get("duration_ms")
+        .and_then(|v| v.as_u64())
+        .unwrap_or(0);
 
     Ok(GenerationOutput {
         text,
@@ -99,11 +116,17 @@ pub async fn embed_text(text: &str, model: &str) -> Result<Vec<f32>, SyntropctlE
     )
     .await?;
 
-    let raw = res.get("embedding").and_then(|v| v.as_array()).ok_or_else(|| {
-        SyntropctlError::MalformedReply("Missing 'embedding' array in Embed reply".into())
-    })?;
+    let raw = res
+        .get("embedding")
+        .and_then(|v| v.as_array())
+        .ok_or_else(|| {
+            SyntropctlError::MalformedReply("Missing 'embedding' array in Embed reply".into())
+        })?;
 
-    let vec: Vec<f32> = raw.iter().filter_map(|v| v.as_f64().map(|f| f as f32)).collect();
+    let vec: Vec<f32> = raw
+        .iter()
+        .filter_map(|v| v.as_f64().map(|f| f as f32))
+        .collect();
     Ok(vec)
 }
 
@@ -118,8 +141,7 @@ mod tests {
     /// the old 10s budget, passes on the generation budget.
     #[tokio::test]
     async fn generate_survives_slow_cold_engine() {
-        let path =
-            std::env::temp_dir().join(format!("gen-slow-{}.sock", std::process::id()));
+        let path = std::env::temp_dir().join(format!("gen-slow-{}.sock", std::process::id()));
         let _ = std::fs::remove_file(&path);
         let listener = UnixListener::bind(&path).unwrap();
         std::env::set_var("SYNTROP_RUNTIMED_SOCKET", &path);
@@ -143,7 +165,9 @@ mod tests {
             let _ = sock.write_all(&bytes).await;
             let _ = sock.write_all(&[0x00]).await;
         });
-        let out = generate_text("hi", "cold-model", 1, 0.0, None).await.unwrap();
+        let out = generate_text("hi", "cold-model", 1, 0.0, None)
+            .await
+            .unwrap();
         assert_eq!(out.text, "slow-hi");
         assert_eq!(out.completion_tokens, 1);
         let _ = server.await;

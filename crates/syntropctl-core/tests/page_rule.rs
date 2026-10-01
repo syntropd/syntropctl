@@ -12,8 +12,15 @@ const MIN_LINES: usize = 16;
 const MAX_LINES: usize = 256;
 const MAX_FILES_PER_DIR: usize = 8;
 const BANNED: &[&str] = &[
-    "util.rs", "utils.rs", "helper.rs", "helpers.rs", "common.rs", "misc.rs", "shared.rs",
-    "base.rs", "core.rs",
+    "util.rs",
+    "utils.rs",
+    "helper.rs",
+    "helpers.rs",
+    "common.rs",
+    "misc.rs",
+    "shared.rs",
+    "base.rs",
+    "core.rs",
 ];
 
 /// Repository root: first ancestor of this package holding `.git`.
@@ -92,7 +99,11 @@ fn is_banned(path: &Path) -> bool {
 fn page_rule() {
     let root = git_root();
     let files = collect_rs(&root);
-    assert!(!files.is_empty(), "page rule: no .rs files under {}", root.display());
+    assert!(
+        !files.is_empty(),
+        "page rule: no .rs files under {}",
+        root.display()
+    );
     let mut violations: Vec<String> = Vec::new();
     let mut per_dir: HashMap<PathBuf, usize> = HashMap::new();
     for path in &files {
@@ -101,7 +112,10 @@ fn page_rule() {
             *per_dir.entry(parent.to_path_buf()).or_insert(0) += 1;
         }
         if is_banned(path) {
-            violations.push(format!("{}: banned file name (name the function)", rel.display()));
+            violations.push(format!(
+                "{}: banned file name (name the function)",
+                rel.display()
+            ));
         }
         let content = match std::fs::read_to_string(path) {
             Ok(c) => c,
@@ -112,20 +126,36 @@ fn page_rule() {
         };
         let lines = content.lines().count();
         if lines > MAX_LINES {
-            violations.push(format!("{rel}: {lines} lines (max {MAX_LINES}) — split along functional lines", rel = rel.display()));
+            violations.push(format!(
+                "{rel}: {lines} lines (max {MAX_LINES}) — split along functional lines",
+                rel = rel.display()
+            ));
         } else if lines < MIN_LINES && !is_shim(&content) {
-            violations.push(format!("{rel}: {lines} lines (min {MIN_LINES}, not a shim) — fold into its sibling", rel = rel.display()));
+            violations.push(format!(
+                "{rel}: {lines} lines (min {MIN_LINES}, not a shim) — fold into its sibling",
+                rel = rel.display()
+            ));
         }
     }
-    let mut dense: Vec<_> = per_dir.into_iter().filter(|(_, n)| *n > MAX_FILES_PER_DIR).collect();
+    let mut dense: Vec<_> = per_dir
+        .into_iter()
+        .filter(|(_, n)| *n > MAX_FILES_PER_DIR)
+        .collect();
     dense.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
     for (dir, n) in dense {
-        violations.push(format!("{}: {n} pages (max {MAX_FILES_PER_DIR} per dir) — group into subdirs", dir.display()));
+        violations.push(format!(
+            "{}: {n} pages (max {MAX_FILES_PER_DIR} per dir) — group into subdirs",
+            dir.display()
+        ));
     }
     for v in &violations {
         println!("page violation: {v}");
     }
-    assert!(violations.is_empty(), "page rule: {} violation(s), see output above", violations.len());
+    assert!(
+        violations.is_empty(),
+        "page rule: {} violation(s), see output above",
+        violations.len()
+    );
 }
 
 #[cfg(test)]

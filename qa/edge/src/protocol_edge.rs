@@ -76,7 +76,8 @@ mod tests {
             stream.write_all(bad_bytes).await.unwrap();
         });
 
-        let res = VarlinkClient::call(&sock_path, "test.Method", None, Duration::from_millis(500)).await;
+        let res =
+            VarlinkClient::call(&sock_path, "test.Method", None, Duration::from_millis(500)).await;
 
         match res {
             Err(SyntropctlError::Json(_)) => (),

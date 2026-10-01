@@ -16,9 +16,17 @@ pub async fn handle_embed(text: &str, model: &str, json: bool) -> Result<()> {
         }));
     } else {
         println!("Embedding Dimensions: {}", vector.len());
-        let sample = if vector.len() > 8 { &vector[..8] } else { &vector };
+        let sample = if vector.len() > 8 {
+            &vector[..8]
+        } else {
+            &vector
+        };
         let formatted: Vec<String> = sample.iter().map(|v| format!("{:.4}", v)).collect();
-        println!("Vector Sample (first {}): [{}]", sample.len(), formatted.join(", "));
+        println!(
+            "Vector Sample (first {}): [{}]",
+            sample.len(),
+            formatted.join(", ")
+        );
     }
 
     Ok(())

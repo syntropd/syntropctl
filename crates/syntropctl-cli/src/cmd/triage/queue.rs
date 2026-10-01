@@ -104,7 +104,11 @@ pub fn append_audit(inc: &PendingIncident, action: &str, status: &str) {
         "status": status,
         "explanation": inc.explanation,
     });
-    if let Ok(mut f) = OpenOptions::new().create(true).append(true).open(base.join("audit.log")) {
+    if let Ok(mut f) = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(base.join("audit.log"))
+    {
         let _ = writeln!(f, "{record}");
     }
     let payload = format!(

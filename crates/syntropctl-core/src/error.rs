@@ -73,7 +73,12 @@ mod tests {
             error: "io.syntrop.Model1.ModelNotFound".to_string(),
             parameters: Some(serde_json::json!({"model": "m"})),
         };
-        assert!(proto.to_string().contains("io.syntrop.Model1.ModelNotFound"), "{proto}");
+        assert!(
+            proto
+                .to_string()
+                .contains("io.syntrop.Model1.ModelNotFound"),
+            "{proto}"
+        );
 
         assert_eq!(
             SyntropctlError::MalformedReply("empty".to_string()).to_string(),
@@ -91,8 +96,7 @@ mod tests {
 
     #[test]
     fn io_and_json_convert_with_from() {
-        let io: SyntropctlError =
-            std::io::Error::new(std::io::ErrorKind::TimedOut, "slow").into();
+        let io: SyntropctlError = std::io::Error::new(std::io::ErrorKind::TimedOut, "slow").into();
         assert!(matches!(io, SyntropctlError::Io(_)));
         let json: SyntropctlError = json_error().into();
         assert!(matches!(json, SyntropctlError::Json(_)));

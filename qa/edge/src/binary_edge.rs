@@ -13,7 +13,11 @@ mod tests {
             .expect("qa/edge lives two levels below the workspace root")
             .to_path_buf();
         let bin = root.join("target/debug/syntropctl");
-        assert!(bin.exists(), "run via cargo test --workspace so {} is built", bin.display());
+        assert!(
+            bin.exists(),
+            "run via cargo test --workspace so {} is built",
+            bin.display()
+        );
         bin
     }
 
@@ -42,7 +46,10 @@ mod tests {
 
     #[test]
     fn test_completions_emit_bash_script() {
-        let out = Command::new(binary()).args(["completions", "bash"]).output().unwrap();
+        let out = Command::new(binary())
+            .args(["completions", "bash"])
+            .output()
+            .unwrap();
         assert!(out.status.success());
         assert!(String::from_utf8_lossy(&out.stdout).contains("syntropctl"));
     }
@@ -67,6 +74,8 @@ mod tests {
         let statuses: Vec<serde_json::Value> =
             serde_json::from_slice(&out.stdout).expect("status --json prints an array");
         assert_eq!(statuses.len(), 7);
-        assert!(statuses.iter().all(|s| s["socket_exists"].as_bool() == Some(false)));
+        assert!(statuses
+            .iter()
+            .all(|s| s["socket_exists"].as_bool() == Some(false)));
     }
 }

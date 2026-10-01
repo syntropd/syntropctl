@@ -12,7 +12,13 @@ mod tests {
     #[tokio::test]
     async fn test_nonexistent_socket_returns_daemon_unavailable() {
         let path = PathBuf::from("/tmp/nonexistent_socket_file_12345.sock");
-        let res = VarlinkClient::call(&path, "io.syntrop.Test1.Ping", None, Duration::from_millis(100)).await;
+        let res = VarlinkClient::call(
+            &path,
+            "io.syntrop.Test1.Ping",
+            None,
+            Duration::from_millis(100),
+        )
+        .await;
 
         match res {
             Err(SyntropctlError::DaemonUnavailable { daemon, socket, .. }) => {
@@ -43,7 +49,13 @@ mod tests {
             drop(stream);
         });
 
-        let res = VarlinkClient::call(&sock_path, "org.varlink.service.GetInfo", None, Duration::from_millis(500)).await;
+        let res = VarlinkClient::call(
+            &sock_path,
+            "org.varlink.service.GetInfo",
+            None,
+            Duration::from_millis(500),
+        )
+        .await;
 
         match res {
             Err(SyntropctlError::MalformedReply(msg)) => {
@@ -52,7 +64,10 @@ mod tests {
             Err(SyntropctlError::Io(e)) => {
                 assert_eq!(e.kind(), std::io::ErrorKind::ConnectionReset);
             }
-            other => panic!("Expected MalformedReply or Io(ConnectionReset), got {:?}", other),
+            other => panic!(
+                "Expected MalformedReply or Io(ConnectionReset), got {:?}",
+                other
+            ),
         }
 
         server_task.await.unwrap();

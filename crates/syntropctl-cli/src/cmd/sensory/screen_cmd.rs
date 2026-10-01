@@ -1,16 +1,12 @@
 //! Screen capture command handler.
 
-use std::path::Path;
 use anyhow::Result;
+use std::path::Path;
 use syntropctl_core::sensory::capture_screen;
 
 use crate::format::print_json;
 
-pub async fn handle_screen(
-    display: Option<&str>,
-    out: Option<&Path>,
-    json: bool,
-) -> Result<()> {
+pub async fn handle_screen(display: Option<&str>, out: Option<&Path>, json: bool) -> Result<()> {
     let res = capture_screen(display).await?;
 
     if let Some(out_path) = out {

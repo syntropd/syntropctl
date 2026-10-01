@@ -134,7 +134,9 @@ pub async fn handle_decide(
 async fn process_targeted(base: &Path, id: &str, approve: bool, json: bool) -> anyhow::Result<()> {
     let (path, inc) = with_lock(base, || {
         let incidents = load_incidents(base);
-        let found = incidents.into_iter().find(|(_, inc)| inc.incident_id.starts_with(id));
+        let found = incidents
+            .into_iter()
+            .find(|(_, inc)| inc.incident_id.starts_with(id));
         found.ok_or_else(|| anyhow::anyhow!("Incident '{id}' not found in pending queue"))
     })?;
 
@@ -148,7 +150,10 @@ async fn process_targeted(base: &Path, id: &str, approve: bool, json: bool) -> a
             Ok(())
         })?;
         if json {
-            println!("{}", serde_json::json!({ "status": "approved", "incident_id": inc.incident_id, "action": act_str }));
+            println!(
+                "{}",
+                serde_json::json!({ "status": "approved", "incident_id": inc.incident_id, "action": act_str })
+            );
         } else {
             println!("Approved incident {} for {}", inc.incident_id, inc.unit);
         }
@@ -158,7 +163,10 @@ async fn process_targeted(base: &Path, id: &str, approve: bool, json: bool) -> a
             Ok(())
         })?;
         if json {
-            println!("{}", serde_json::json!({ "status": "rejected", "incident_id": inc.incident_id }));
+            println!(
+                "{}",
+                serde_json::json!({ "status": "rejected", "incident_id": inc.incident_id })
+            );
         } else {
             println!("Rejected incident {}", inc.incident_id);
         }
