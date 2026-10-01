@@ -1,6 +1,6 @@
 {
  "repo": "syntropctl",
- "rev": "8a78e4c",
+ "rev": "80f140b",
  "dirty": false,
  "pages": [
   {
@@ -236,7 +236,7 @@
   },
   {
    "path": "./crates/syntropctl-core/src/admin/journal.rs",
-   "lines": 157,
+   "lines": 109,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 4
@@ -250,10 +250,17 @@
   },
   {
    "path": "./crates/syntropctl-core/src/admin/mod.rs",
-   "lines": 15,
+   "lines": 17,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 0
+  },
+  {
+   "path": "./crates/syntropctl-core/src/admin/query_fault.rs",
+   "lines": 135,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 2
   },
   {
    "path": "./crates/syntropctl-core/src/admin/recipe.rs",
@@ -264,17 +271,17 @@
   },
   {
    "path": "./crates/syntropctl-core/src/admin/remediate.rs",
-   "lines": 215,
+   "lines": 195,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 2
   },
   {
    "path": "./crates/syntropctl-core/src/admin/rollback.rs",
-   "lines": 144,
+   "lines": 157,
    "bin_bytes": null,
    "heat_pct": null,
-   "reach": 3
+   "reach": 4
   },
   {
    "path": "./crates/syntropctl-core/src/admin/status.rs",
@@ -446,7 +453,7 @@
   },
   {
    "path": "./qa/edge/src/admin_edge.rs",
-   "lines": 128,
+   "lines": 152,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 0
