@@ -1,6 +1,6 @@
 {
  "repo": "syntropctl",
- "rev": "e2d5b62",
+ "rev": "da8e24e",
  "dirty": false,
  "pages": [
   {
@@ -390,14 +390,14 @@
   },
   {
    "path": "./crates/syntropctl-core/src/companion/ask.rs",
-   "lines": 53,
+   "lines": 94,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 2
   },
   {
    "path": "./crates/syntropctl-core/src/companion/execute.rs",
-   "lines": 177,
+   "lines": 237,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 3
