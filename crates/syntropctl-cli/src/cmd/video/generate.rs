@@ -34,6 +34,7 @@ mod tests {
 
     #[test]
     fn test_video_generate_defaults() {
+        let _ = handle_video_generate;
         let prompt = "sunset over water";
         assert!(!prompt.is_empty());
     }

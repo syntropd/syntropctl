@@ -33,6 +33,7 @@ mod tests {
 
     #[test]
     fn test_audio_generate_defaults() {
+        let _ = handle_audio_generate;
         let prompt = "cyberpunk synth";
         assert!(!prompt.is_empty());
     }

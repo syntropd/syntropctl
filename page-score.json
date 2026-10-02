@@ -1,6 +1,6 @@
 {
  "repo": "syntropctl",
- "rev": "c641fa9",
+ "rev": "53dc87d",
  "dirty": true,
  "pages": [
   {
@@ -54,7 +54,7 @@
   },
   {
    "path": "./crates/syntropctl-cli/src/cmd/audio/generate.rs",
-   "lines": 39,
+   "lines": 40,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 1
@@ -271,7 +271,7 @@
   },
   {
    "path": "./crates/syntropctl-cli/src/cmd/video/generate.rs",
-   "lines": 40,
+   "lines": 41,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 1
