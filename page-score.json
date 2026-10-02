@@ -1,7 +1,7 @@
 {
  "repo": "syntropctl",
- "rev": "576e7c4",
- "dirty": true,
+ "rev": "e2d5b62",
+ "dirty": false,
  "pages": [
   {
    "path": "./crates/syntropctl-cli/src/cli.rs",
@@ -271,7 +271,7 @@
   },
   {
    "path": "./crates/syntropctl-cli/src/cmd/video/generate.rs",
-   "lines": 71,
+   "lines": 80,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 1
@@ -285,7 +285,7 @@
   },
   {
    "path": "./crates/syntropctl-cli/src/cmd/visual/generate.rs",
-   "lines": 81,
+   "lines": 97,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 1
@@ -523,14 +523,14 @@
   },
   {
    "path": "./crates/syntropctl-core/src/ops/inference/video.rs",
-   "lines": 120,
+   "lines": 134,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 5
   },
   {
    "path": "./crates/syntropctl-core/src/ops/inference/visual.rs",
-   "lines": 135,
+   "lines": 149,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 1
