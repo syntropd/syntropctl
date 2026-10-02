@@ -60,14 +60,29 @@ where
             let audio_opt = capture_audio(Some(300), Some(16000)).await.ok();
             if let Ok(presence) = get_operator_presence().await {
                 if presence.present && presence.confidence > 0.5 {
-                    let desc = if let Some(ref a) = audio_opt {
-                        match crate::ops::inference::transcribe_audio(&a.audio_pcm_base64, Some("en")).await {
-                            Ok(t) if !t.text.is_empty() => format!("Transcribed: \"{}\"", t.text),
-                            _ => format!("Operator speech activity: {}", presence.reason),
+                    let mut desc = format!("Operator speech activity: {}", presence.reason);
+                    if let Some(ref a) = audio_opt {
+                        if let Ok(t) =
+                            crate::ops::inference::transcribe_audio(&a.audio_pcm_base64, Some("en"))
+                                .await
+                        {
+                            if !t.text.is_empty() {
+                                desc = format!("Transcribed: \"{}\"", t.text);
+                                let reply = super::router_stream::query_router_text(
+                                    &t.text,
+                                    Some("You are an ambient conversational voice assistant. Keep answers brief, helpful, and natural for speech synthesis.")
+                                ).await.unwrap_or_else(|_| "Voice input received.".to_string());
+
+                                desc.push_str(&format!(" -> Assistant: \"{}\"", reply));
+                                let _ = crate::ops::inference::stream_audio_out(
+                                    &reply,
+                                    Some("af_bella"),
+                                    Some("auto"),
+                                )
+                                .await;
+                            }
                         }
-                    } else {
-                        format!("Operator speech activity: {}", presence.reason)
-                    };
+                    }
                     let ev = CompanionListenEvent {
                         trigger_type: "voice".to_string(),
                         description: desc,

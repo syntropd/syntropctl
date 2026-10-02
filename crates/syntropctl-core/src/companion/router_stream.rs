@@ -20,10 +20,10 @@ pub fn router_socket_path() -> PathBuf {
     PathBuf::from("/run/syntrop/router.sock")
 }
 
-/// Transmit multimodal prompt and base64 PNG image directly to routerd without disk I/O.
-pub async fn query_router_multimodal(
+/// Transmit prompt (and optional base64 image) directly to routerd without disk I/O.
+pub async fn query_router(
     prompt: &str,
-    image_base64: &str,
+    image_base64: Option<&str>,
     system_prompt: Option<&str>,
 ) -> Result<String, SyntropctlError> {
     let sock = router_socket_path();
@@ -43,17 +43,24 @@ pub async fn query_router_multimodal(
         }));
     }
 
-    let image_data_url = format!("data:image/png;base64,{}", image_base64);
-    messages.push(json!({
-        "role": "user",
-        "content": [
-            { "type": "text", "text": prompt },
-            {
-                "type": "image_url",
-                "image_url": { "url": image_data_url }
-            }
-        ]
-    }));
+    if let Some(img) = image_base64 {
+        let image_data_url = format!("data:image/png;base64,{}", img);
+        messages.push(json!({
+            "role": "user",
+            "content": [
+                { "type": "text", "text": prompt },
+                {
+                    "type": "image_url",
+                    "image_url": { "url": image_data_url }
+                }
+            ]
+        }));
+    } else {
+        messages.push(json!({
+            "role": "user",
+            "content": prompt,
+        }));
+    }
 
     let request_body = json!({
         "model": "router:auto",
@@ -86,6 +93,23 @@ pub async fn query_router_multimodal(
         .map_err(|_| SyntropctlError::OperationFailed("Multimodal router request timed out".into()))??;
 
     parse_http_completion_response(&response_bytes)
+}
+
+/// Transmit text prompt directly to routerd without disk I/O.
+pub async fn query_router_text(
+    prompt: &str,
+    system_prompt: Option<&str>,
+) -> Result<String, SyntropctlError> {
+    query_router(prompt, None, system_prompt).await
+}
+
+/// Transmit multimodal prompt and base64 PNG image directly to routerd without disk I/O.
+pub async fn query_router_multimodal(
+    prompt: &str,
+    image_base64: &str,
+    system_prompt: Option<&str>,
+) -> Result<String, SyntropctlError> {
+    query_router(prompt, Some(image_base64), system_prompt).await
 }
 
 /// Decode HTTP chunked transfer-encoding body into plain payload.

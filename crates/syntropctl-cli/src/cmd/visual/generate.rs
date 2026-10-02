@@ -12,10 +12,14 @@ pub async fn handle_visual_generate(
     size: Option<&str>,
     json: bool,
 ) -> Result<()> {
+    let trimmed = prompt.trim();
+    if trimmed.is_empty() {
+        anyhow::bail!("prompt cannot be empty");
+    }
     let (width, height) = parse_dimensions(size)?;
     let loras = lora.map(|l| vec![l.to_string()]).unwrap_or_default();
 
-    let output = generate_visual(prompt, model, &loras, width, height).await?;
+    let output = generate_visual(trimmed, model, &loras, width, height).await?;
 
     if json {
         print_json(&output);

@@ -1,6 +1,6 @@
 {
  "repo": "syntropctl",
- "rev": "53dc87d",
+ "rev": "270dbc8",
  "dirty": true,
  "pages": [
   {
@@ -54,7 +54,7 @@
   },
   {
    "path": "./crates/syntropctl-cli/src/cmd/audio/generate.rs",
-   "lines": 40,
+   "lines": 63,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 1
@@ -271,7 +271,7 @@
   },
   {
    "path": "./crates/syntropctl-cli/src/cmd/video/generate.rs",
-   "lines": 41,
+   "lines": 64,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 1
@@ -285,7 +285,7 @@
   },
   {
    "path": "./crates/syntropctl-cli/src/cmd/visual/generate.rs",
-   "lines": 61,
+   "lines": 65,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 1
@@ -404,7 +404,7 @@
   },
   {
    "path": "./crates/syntropctl-core/src/companion/listen.rs",
-   "lines": 118,
+   "lines": 133,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 2
@@ -418,10 +418,10 @@
   },
   {
    "path": "./crates/syntropctl-core/src/companion/router_stream.rs",
-   "lines": 191,
+   "lines": 215,
    "bin_bytes": null,
    "heat_pct": null,
-   "reach": 3
+   "reach": 4
   },
   {
    "path": "./crates/syntropctl-core/src/companion/safety.rs",
@@ -502,14 +502,14 @@
   },
   {
    "path": "./crates/syntropctl-core/src/ops/inference/audio.rs",
-   "lines": 140,
+   "lines": 219,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 1
   },
   {
    "path": "./crates/syntropctl-core/src/ops/inference/mod.rs",
-   "lines": 37,
+   "lines": 40,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 0
@@ -523,14 +523,14 @@
   },
   {
    "path": "./crates/syntropctl-core/src/ops/inference/video.rs",
-   "lines": 72,
+   "lines": 83,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 5
   },
   {
    "path": "./crates/syntropctl-core/src/ops/inference/visual.rs",
-   "lines": 96,
+   "lines": 101,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 1

@@ -19,6 +19,17 @@ pub async fn generate_video(
     frames: usize,
     fps: u32,
 ) -> Result<VideoGenerationOutput, SyntropctlError> {
+    let trimmed = prompt.trim();
+    if trimmed.is_empty() {
+        return Err(SyntropctlError::OperationFailed("prompt cannot be empty".into()));
+    }
+    if frames == 0 {
+        return Err(SyntropctlError::OperationFailed("frames must be greater than 0".into()));
+    }
+    if fps == 0 {
+        return Err(SyntropctlError::OperationFailed("fps must be greater than 0".into()));
+    }
+
     let runtimed_ep = DaemonEndpoint::from_name("runtimed")
         .ok_or_else(|| SyntropctlError::NotFound("runtimed endpoint not configured".into()))?;
     let sock = runtimed_ep.socket_path();
@@ -31,7 +42,7 @@ pub async fn generate_video(
     }
 
     let params = serde_json::json!({
-        "prompt": prompt,
+        "prompt": trimmed,
         "frames": frames,
         "fps": fps,
     });

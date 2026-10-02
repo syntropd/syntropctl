@@ -23,6 +23,11 @@ pub async fn generate_visual(
     width: u32,
     height: u32,
 ) -> Result<VisualGenerationOutput, SyntropctlError> {
+    let trimmed = prompt.trim();
+    if trimmed.is_empty() {
+        return Err(SyntropctlError::OperationFailed("prompt cannot be empty".into()));
+    }
+
     let runtimed_ep = DaemonEndpoint::from_name("runtimed")
         .ok_or_else(|| SyntropctlError::NotFound("runtimed endpoint not configured".into()))?;
     let sock = runtimed_ep.socket_path();
@@ -35,7 +40,7 @@ pub async fn generate_visual(
     }
 
     let mut params = serde_json::json!({
-        "prompt": prompt,
+        "prompt": trimmed,
         "width": width,
         "height": height,
     });

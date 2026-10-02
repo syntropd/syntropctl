@@ -17,9 +17,9 @@ pub use devices::{query_devices, DeviceP2pLink, DeviceReport};
 pub use drift::{query_drift, DriftEvent};
 pub use explain::{explain_unit, IncidentReport};
 pub use inference::{
-    embed_text, generate_music, generate_text, generate_video, generate_visual,
-    AudioGenerationOutput, GenerationOutput, TranscribeAudioOutput, VideoGenerationOutput,
-    VisualGenerationOutput,
+    embed_text, generate_music, generate_text, generate_video, generate_visual, stream_audio_out,
+    AudioGenerationOutput, GenerationOutput, StreamAudioOutOutput, TranscribeAudioOutput,
+    VideoGenerationOutput, VisualGenerationOutput,
 };
 pub use models::{query_models, query_storage_stats, ModelEntry, StorageStats};
 pub use run::{execute_sandboxed_tool, ToolRunResult};

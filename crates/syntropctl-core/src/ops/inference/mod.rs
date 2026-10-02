@@ -5,7 +5,10 @@ pub mod text;
 pub mod video;
 pub mod visual;
 
-pub use audio::{generate_music, transcribe_audio, AudioGenerationOutput, TranscribeAudioOutput};
+pub use audio::{
+    generate_music, stream_audio_out, transcribe_audio, AudioGenerationOutput, StreamAudioOutOutput,
+    TranscribeAudioOutput,
+};
 pub use text::{embed_text, generate_text, GenerationOutput};
 pub use video::{generate_video, VideoGenerationOutput};
 pub use visual::{generate_visual, VisualGenerationOutput};
