@@ -34,6 +34,9 @@ mod tests {
             width: 64,
             height: 64,
             format: "png".into(),
+            storyboard_path: None,
+            manifest_path: None,
+            keyframes: None,
         };
         assert_eq!(visual_out.width, 64);
     }

@@ -11,6 +11,10 @@ pub struct VideoGenerationOutput {
     pub video_path: String,
     pub frames: usize,
     pub duration_ms: u64,
+    pub storyboard_path: Option<String>,
+    pub manifest_path: Option<String>,
+    pub format: Option<String>,
+    pub keyframes: Option<usize>,
 }
 
 /// Execute generative video synthesis via runtimed.
@@ -18,6 +22,8 @@ pub async fn generate_video(
     prompt: &str,
     frames: usize,
     fps: u32,
+    storyboard: Option<usize>,
+    allow_degrade: bool,
 ) -> Result<VideoGenerationOutput, SyntropctlError> {
     let trimmed = prompt.trim();
     if trimmed.is_empty() {
@@ -41,19 +47,42 @@ pub async fn generate_video(
         });
     }
 
-    let params = serde_json::json!({
+    let mut params = serde_json::json!({
         "prompt": trimmed,
         "frames": frames,
         "fps": fps,
+        "allow_degrade": allow_degrade,
     });
+    if let Some(sb) = storyboard {
+        params["storyboard"] = serde_json::json!(sb);
+    }
 
-    let res = VarlinkClient::call(
+    let res = match VarlinkClient::call(
         &sock,
         "io.syntrop.Runtime1.GenerateVideo",
         Some(params),
         GENERATE_RPC_TIMEOUT,
     )
-    .await?;
+    .await {
+        Ok(v) => v,
+        Err(SyntropctlError::ProtocolError { error, parameters })
+            if error.ends_with(".HardwareIncompatible") =>
+        {
+            let p = parameters.unwrap_or(serde_json::Value::Null);
+            let deficit = p.get("deficit").and_then(|v| v.as_str()).unwrap_or("").to_string();
+            let estimated_cpu_latency_secs = p.get("estimated_cpu_latency_secs").and_then(|v| v.as_f64()).unwrap_or(0.0);
+            let suggested_alternatives = p.get("suggested_alternatives")
+                .and_then(|v| v.as_array())
+                .map(|arr| arr.iter().filter_map(|x| x.as_str().map(String::from)).collect())
+                .unwrap_or_default();
+            return Err(SyntropctlError::HardwareIncompatible {
+                deficit,
+                estimated_cpu_latency_secs,
+                suggested_alternatives,
+            });
+        }
+        Err(e) => return Err(e),
+    };
 
     Ok(VideoGenerationOutput {
         video_path: res
@@ -63,6 +92,10 @@ pub async fn generate_video(
             .to_string(),
         frames: res.get("frames").and_then(|v| v.as_u64()).unwrap_or(frames as u64) as usize,
         duration_ms: res.get("duration_ms").and_then(|v| v.as_u64()).unwrap_or(0),
+        storyboard_path: res.get("storyboard_path").and_then(|v| v.as_str()).map(String::from),
+        manifest_path: res.get("manifest_path").and_then(|v| v.as_str()).map(String::from),
+        format: res.get("format").and_then(|v| v.as_str()).map(String::from),
+        keyframes: res.get("keyframes").and_then(|v| v.as_u64()).map(|k| k as usize),
     })
 }
 
@@ -76,6 +109,10 @@ mod tests {
             video_path: "/tmp/video.mp4".into(),
             frames: 16,
             duration_ms: 2000,
+            storyboard_path: None,
+            manifest_path: None,
+            format: None,
+            keyframes: None,
         };
         assert_eq!(vid.frames, 16);
         assert_eq!(vid.duration_ms, 2000);

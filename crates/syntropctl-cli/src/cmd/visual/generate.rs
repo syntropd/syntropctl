@@ -10,6 +10,8 @@ pub async fn handle_visual_generate(
     model: Option<&str>,
     lora: Option<&str>,
     size: Option<&str>,
+    storyboard: Option<usize>,
+    allow_degrade: bool,
     json: bool,
 ) -> Result<()> {
     let trimmed = prompt.trim();
@@ -19,10 +21,24 @@ pub async fn handle_visual_generate(
     let (width, height) = parse_dimensions(size)?;
     let loras = lora.map(|l| vec![l.to_string()]).unwrap_or_default();
 
-    let output = generate_visual(trimmed, model, &loras, width, height).await?;
+    let output = generate_visual(
+        trimmed,
+        model,
+        &loras,
+        width,
+        height,
+        storyboard,
+        allow_degrade,
+    )
+    .await?;
 
     if json {
         print_json(&output);
+    } else if let Some(sb_path) = &output.storyboard_path {
+        println!("{}", sb_path);
+        let kf = output.keyframes.unwrap_or(0);
+        let mf = output.manifest_path.as_deref().unwrap_or("-");
+        eprintln!("[Storyboard: {kf} keyframes | {width}x{height} | Manifest: {mf} | Path: {sb_path}]");
     } else {
         println!("{}", output.image_path);
         eprintln!(

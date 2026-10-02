@@ -107,29 +107,64 @@ async fn main() -> ExitCode {
                 model,
                 lora,
                 size,
+                storyboard,
+                allow_degrade,
             } => handle_visual_generate(
                 &prompt,
                 model.as_deref(),
                 lora.as_deref(),
                 size.as_deref(),
+                storyboard,
+                allow_degrade,
                 json,
             )
             .await
             .map(|_| ExitCode::SUCCESS),
         },
         Commands::Video { command } => match command {
-            VideoCommands::Generate { prompt, frames, fps } => {
-                handle_video_generate(&prompt, frames, fps, json)
-                    .await
-                    .map(|_| ExitCode::SUCCESS)
-            }
+            VideoCommands::Generate {
+                prompt,
+                frames,
+                fps,
+                storyboard,
+                allow_degrade,
+            } => handle_video_generate(&prompt, frames, fps, storyboard, allow_degrade, json)
+                .await
+                .map(|_| ExitCode::SUCCESS),
         },
     };
 
     match res {
         Ok(code) => code,
         Err(e) => {
-            if json {
+            if let Some(syntropctl_core::error::SyntropctlError::HardwareIncompatible {
+                deficit,
+                estimated_cpu_latency_secs,
+                suggested_alternatives,
+            }) = e.downcast_ref::<syntropctl_core::error::SyntropctlError>() {
+                if json {
+                    eprintln!(
+                        "{}",
+                        serde_json::json!({
+                            "error": "HardwareIncompatible",
+                            "deficit": deficit,
+                            "estimated_cpu_latency_secs": estimated_cpu_latency_secs,
+                            "suggested_alternatives": suggested_alternatives,
+                        })
+                    );
+                } else {
+                    eprintln!("Hardware incompatible: insufficient GPU VRAM");
+                    eprintln!("  Deficit: {deficit}");
+                    eprintln!("  Estimated CPU latency: {estimated_cpu_latency_secs:.1}s");
+                    if !suggested_alternatives.is_empty() {
+                        eprintln!("  Suggested alternatives:");
+                        for alt in suggested_alternatives {
+                            eprintln!("    - {alt}");
+                        }
+                    }
+                    eprintln!("  Tip: use --allow-degrade or --storyboard <n> to generate fast CPU keyframes");
+                }
+            } else if json {
                 eprintln!(
                     "{}",
                     serde_json::json!({

@@ -41,6 +41,14 @@ pub enum SyntropctlError {
     /// Requested resource or daemon was not found.
     #[error("Not found: {0}")]
     NotFound(String),
+
+    /// Hardware envelope incompatible with requested workload.
+    #[error("Hardware incompatible: deficit={deficit}, estimated CPU latency={estimated_cpu_latency_secs}s, suggested alternatives={suggested_alternatives:?}")]
+    HardwareIncompatible {
+        deficit: String,
+        estimated_cpu_latency_secs: f64,
+        suggested_alternatives: Vec<String>,
+    },
 }
 
 #[cfg(test)]

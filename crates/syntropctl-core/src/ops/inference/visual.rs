@@ -13,6 +13,9 @@ pub struct VisualGenerationOutput {
     pub width: u32,
     pub height: u32,
     pub format: String,
+    pub storyboard_path: Option<String>,
+    pub manifest_path: Option<String>,
+    pub keyframes: Option<usize>,
 }
 
 /// Execute generative visual synthesis via runtimed.
@@ -22,6 +25,8 @@ pub async fn generate_visual(
     loras: &[String],
     width: u32,
     height: u32,
+    storyboard: Option<usize>,
+    allow_degrade: bool,
 ) -> Result<VisualGenerationOutput, SyntropctlError> {
     let trimmed = prompt.trim();
     if trimmed.is_empty() {
@@ -43,6 +48,7 @@ pub async fn generate_visual(
         "prompt": trimmed,
         "width": width,
         "height": height,
+        "allow_degrade": allow_degrade,
     });
     if let Some(m) = model {
         params["model"] = serde_json::json!(m);
@@ -50,14 +56,36 @@ pub async fn generate_visual(
     if !loras.is_empty() {
         params["loras"] = serde_json::json!(loras);
     }
+    if let Some(sb) = storyboard {
+        params["storyboard"] = serde_json::json!(sb);
+    }
 
-    let res = VarlinkClient::call(
+    let res = match VarlinkClient::call(
         &sock,
         "io.syntrop.Runtime1.GenerateVisual",
         Some(params),
         GENERATE_RPC_TIMEOUT,
     )
-    .await?;
+    .await {
+        Ok(v) => v,
+        Err(SyntropctlError::ProtocolError { error, parameters })
+            if error.ends_with(".HardwareIncompatible") =>
+        {
+            let p = parameters.unwrap_or(serde_json::Value::Null);
+            let deficit = p.get("deficit").and_then(|v| v.as_str()).unwrap_or("").to_string();
+            let estimated_cpu_latency_secs = p.get("estimated_cpu_latency_secs").and_then(|v| v.as_f64()).unwrap_or(0.0);
+            let suggested_alternatives = p.get("suggested_alternatives")
+                .and_then(|v| v.as_array())
+                .map(|arr| arr.iter().filter_map(|x| x.as_str().map(String::from)).collect())
+                .unwrap_or_default();
+            return Err(SyntropctlError::HardwareIncompatible {
+                deficit,
+                estimated_cpu_latency_secs,
+                suggested_alternatives,
+            });
+        }
+        Err(e) => return Err(e),
+    };
 
     Ok(VisualGenerationOutput {
         image_path: res
@@ -79,6 +107,9 @@ pub async fn generate_visual(
             .and_then(|v| v.as_str())
             .unwrap_or("png")
             .to_string(),
+        storyboard_path: res.get("storyboard_path").and_then(|v| v.as_str()).map(String::from),
+        manifest_path: res.get("manifest_path").and_then(|v| v.as_str()).map(String::from),
+        keyframes: res.get("keyframes").and_then(|v| v.as_u64()).map(|k| k as usize),
     })
 }
 
@@ -94,6 +125,9 @@ mod tests {
             width: 512,
             height: 512,
             format: "png".into(),
+            storyboard_path: None,
+            manifest_path: None,
+            keyframes: None,
         };
         assert_eq!(out.width, 512);
         assert_eq!(out.height, 512);
