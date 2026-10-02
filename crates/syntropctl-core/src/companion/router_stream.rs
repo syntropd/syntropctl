@@ -88,6 +88,40 @@ pub async fn query_router_multimodal(
     parse_http_completion_response(&response_bytes)
 }
 
+/// Decode HTTP chunked transfer-encoding body into plain payload.
+pub fn decode_chunked_body(mut body: &str) -> String {
+    let mut out = String::new();
+    while !body.is_empty() {
+        let trimmed = body.trim_start();
+        if trimmed.is_empty() || trimmed == "0" {
+            break;
+        }
+        if let Some(pos) = trimmed.find("\r\n") {
+            let line = &trimmed[..pos];
+            let hex_len = line.split(';').next().unwrap_or(line).trim();
+            if let Ok(len) = usize::from_str_radix(hex_len, 16) {
+                if len == 0 {
+                    break;
+                }
+                let data_start = pos + 2;
+                if trimmed.len() >= data_start + len {
+                    out.push_str(&trimmed[data_start..data_start + len]);
+                    let after = &trimmed[data_start + len..];
+                    body = after.strip_prefix("\r\n").unwrap_or(after);
+                } else {
+                    out.push_str(&trimmed[data_start..]);
+                    break;
+                }
+            } else {
+                break;
+            }
+        } else {
+            break;
+        }
+    }
+    out
+}
+
 /// Parse HTTP status and choices[0].message.content from raw response bytes.
 pub fn parse_http_completion_response(bytes: &[u8]) -> Result<String, SyntropctlError> {
     let text = String::from_utf8_lossy(bytes);
@@ -104,9 +138,16 @@ pub fn parse_http_completion_response(bytes: &[u8]) -> Result<String, Syntropctl
         )));
     }
 
-    let val: serde_json::Value = serde_json::from_str(body_part.trim()).map_err(|e| {
-        SyntropctlError::MalformedReply(format!("Failed to parse router completion JSON: {e}"))
-    })?;
+    let trimmed_body = body_part.trim();
+    let val: serde_json::Value = match serde_json::from_str(trimmed_body) {
+        Ok(v) => v,
+        Err(_) => {
+            let decoded = decode_chunked_body(trimmed_body);
+            serde_json::from_str(decoded.trim()).map_err(|err| {
+                SyntropctlError::MalformedReply(format!("Failed to parse router completion JSON: {err}"))
+            })?
+        }
+    };
 
     if let Some(content) = val
         .get("choices")
@@ -130,6 +171,13 @@ mod tests {
     #[test]
     fn test_parse_http_completion_response_success() {
         let raw = b"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\"choices\":[{\"message\":{\"content\":\"Screen contains a terminal.\"}}]}";
+        let res = parse_http_completion_response(raw).unwrap();
+        assert_eq!(res, "Screen contains a terminal.");
+    }
+
+    #[test]
+    fn test_parse_http_completion_response_chunked() {
+        let raw = b"HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n43\r\n{\"choices\":[{\"message\":{\"content\":\"Screen contains a terminal.\"}}]}\r\n0\r\n\r\n";
         let res = parse_http_completion_response(raw).unwrap();
         assert_eq!(res, "Screen contains a terminal.");
     }

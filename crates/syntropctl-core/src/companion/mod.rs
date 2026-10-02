@@ -17,7 +17,7 @@ pub use execute::{
     UiAction,
 };
 pub use listen::{
-    listen_session, CompanionListenEvent, CompanionListenOptions,
+    listen_session, listen_session_with_callback, CompanionListenEvent, CompanionListenOptions,
 };
 pub use router_stream::{
     parse_http_completion_response, query_router_multimodal, router_socket_path,

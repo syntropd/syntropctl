@@ -12,9 +12,9 @@ pub mod sensory;
 pub mod varlink;
 
 pub use companion::{
-    ask_screen, click_mouse, execute_instruction, listen_session, move_mouse_abs, send_key,
-    type_text, ActuatorAction, CompanionAskResult, CompanionExecuteResult, CompanionListenEvent,
-    CompanionListenOptions, UiAction,
+    ask_screen, click_mouse, execute_instruction, listen_session, listen_session_with_callback,
+    move_mouse_abs, send_key, type_text, ActuatorAction, CompanionAskResult,
+    CompanionExecuteResult, CompanionListenEvent, CompanionListenOptions, UiAction,
 };
 
 pub use admin::{

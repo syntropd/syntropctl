@@ -29,6 +29,10 @@ pub enum CompanionCommands {
         /// High-level natural language instruction or UI action plan.
         instruction: String,
 
+        /// Optional display identifier (e.g. :0, wayland-0).
+        #[arg(long = "display")]
+        display: Option<String>,
+
         /// Validate and preview action plan without emitting hardware actuator events.
         #[arg(long = "dry-run")]
         dry_run: bool,
@@ -57,8 +61,12 @@ pub async fn handle_companion(command: CompanionCommands, json: bool) -> anyhow:
             handle_ask(&prompt, display.as_deref(), json).await?;
             Ok(ExitCode::SUCCESS)
         }
-        CompanionCommands::Execute { instruction, dry_run } => {
-            handle_execute(&instruction, dry_run, json).await?;
+        CompanionCommands::Execute {
+            instruction,
+            display,
+            dry_run,
+        } => {
+            handle_execute(&instruction, display.as_deref(), dry_run, json).await?;
             Ok(ExitCode::SUCCESS)
         }
         CompanionCommands::Listen { voice, hotkey, once } => {

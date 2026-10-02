@@ -6,10 +6,11 @@ use syntropctl_core::companion::execute_instruction;
 /// Execute `companion execute "<instruction>"` CLI command.
 pub async fn handle_execute(
     instruction: &str,
+    display: Option<&str>,
     dry_run: bool,
     as_json: bool,
 ) -> Result<()> {
-    let result = execute_instruction(instruction, None, dry_run).await?;
+    let result = execute_instruction(instruction, display, dry_run).await?;
 
     if as_json {
         println!("{}", serde_json::to_string_pretty(&result)?);

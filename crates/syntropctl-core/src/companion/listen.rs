@@ -32,11 +32,27 @@ fn current_timestamp_ms() -> u64 {
         .unwrap_or(0)
 }
 
-/// Run an ambient listening session, returning collected activation events.
-pub async fn listen_session(
+/// Run an ambient listening session with a streaming event callback.
+pub async fn listen_session_with_callback<F>(
     options: &CompanionListenOptions,
-) -> Result<Vec<CompanionListenEvent>, SyntropctlError> {
-    let mut events = Vec::new();
+    mut on_event: F,
+) -> Result<Vec<CompanionListenEvent>, SyntropctlError>
+where
+    F: FnMut(&CompanionListenEvent),
+{
+    let mut collected = Vec::new();
+
+    // Hotkey chord listener registration occurs once upon session start
+    if let Some(ref chord) = options.hotkey {
+        let ev = CompanionListenEvent {
+            trigger_type: "hotkey".to_string(),
+            description: format!("Hotkey chord listener registered for '{}'", chord),
+            active: true,
+            timestamp_ms: current_timestamp_ms(),
+        };
+        on_event(&ev);
+        collected.push(ev);
+    }
 
     loop {
         if options.voice {
@@ -44,23 +60,18 @@ pub async fn listen_session(
             let _ = capture_audio(Some(300), Some(16000)).await;
             if let Ok(presence) = get_operator_presence().await {
                 if presence.present && presence.confidence > 0.5 {
-                    events.push(CompanionListenEvent {
+                    let ev = CompanionListenEvent {
                         trigger_type: "voice".to_string(),
                         description: format!("Operator speech activity: {}", presence.reason),
                         active: true,
                         timestamp_ms: current_timestamp_ms(),
-                    });
+                    };
+                    on_event(&ev);
+                    if options.once {
+                        collected.push(ev);
+                    }
                 }
             }
-        }
-
-        if let Some(ref chord) = options.hotkey {
-            events.push(CompanionListenEvent {
-                trigger_type: "hotkey".to_string(),
-                description: format!("Hotkey chord listener registered for '{}'", chord),
-                active: true,
-                timestamp_ms: current_timestamp_ms(),
-            });
         }
 
         if options.once {
@@ -70,7 +81,14 @@ pub async fn listen_session(
         tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
     }
 
-    Ok(events)
+    Ok(collected)
+}
+
+/// Run an ambient listening session, returning collected activation events.
+pub async fn listen_session(
+    options: &CompanionListenOptions,
+) -> Result<Vec<CompanionListenEvent>, SyntropctlError> {
+    listen_session_with_callback(options, |_| {}).await
 }
 
 #[cfg(test)]

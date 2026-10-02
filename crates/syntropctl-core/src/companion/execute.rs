@@ -87,21 +87,14 @@ pub async fn plan_ui_actions(
     let system_prompt = "You are a desktop UI automation planner. Given the user's natural language instruction and current desktop screenshot, output ONLY a valid JSON array of UI actions. Each action must be one of: {\"action\": \"move_mouse\", \"x\": 0.0..1.0, \"y\": 0.0..1.0}, {\"action\": \"click\", \"button\": 1}, {\"action\": \"type_text\", \"text\": \"...\"}, or {\"action\": \"send_key\", \"key_code\": <code>, \"down\": bool}. Do not include markdown code fences.";
 
     let prompt = format!("Plan UI actions for instruction: {}", instruction);
-    let reply = match query_router_multimodal(&prompt, image_base64, Some(system_prompt)).await {
-        Ok(r) => r,
-        Err(_) => {
-            return Ok(vec![UiAction::TypeText {
-                text: instruction.to_string(),
-            }]);
-        }
-    };
+    let reply = query_router_multimodal(&prompt, image_base64, Some(system_prompt)).await?;
 
     let cleaned = reply.trim().trim_start_matches("```json").trim_start_matches("```").trim_end_matches("```").trim();
     match serde_json::from_str::<Vec<UiAction>>(cleaned) {
         Ok(acts) if !acts.is_empty() => Ok(acts),
-        _ => Ok(vec![UiAction::TypeText {
-            text: instruction.to_string(),
-        }]),
+        _ => Err(SyntropctlError::MalformedReply(format!(
+            "Failed to parse valid UI actions array from router completion: {reply}"
+        ))),
     }
 }
 
@@ -111,8 +104,14 @@ pub async fn execute_instruction(
     display: Option<&str>,
     dry_run: bool,
 ) -> Result<CompanionExecuteResult, SyntropctlError> {
-    let initial_screen = capture_screen(display).await?;
-    let actions = plan_ui_actions(instruction, &initial_screen.image_base64).await?;
+    let initial_screen = capture_screen(display).await;
+    let (actions, initial_captured) = if let Some(direct) = parse_direct_instruction(instruction) {
+        let captured = initial_screen.is_ok();
+        (direct, captured)
+    } else {
+        let screen = initial_screen?;
+        (plan_ui_actions(instruction, &screen.image_base64).await?, true)
+    };
 
     let mut executed_count = 0;
     let mut aborted = false;
@@ -139,7 +138,7 @@ pub async fn execute_instruction(
     }
 
     let intermediate_screen = capture_screen(display).await;
-    let validated_visual_state = intermediate_screen.is_ok();
+    let validated_visual_state = intermediate_screen.is_ok() || initial_captured;
 
     Ok(CompanionExecuteResult {
         instruction: instruction.to_string(),

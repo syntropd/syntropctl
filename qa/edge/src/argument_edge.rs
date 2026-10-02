@@ -73,10 +73,12 @@ mod tests {
                 command:
                     syntropctl_cli::cmd::companion::CompanionCommands::Execute {
                         instruction,
+                        display,
                         dry_run,
                     },
             } => {
                 assert_eq!(instruction, "type hello world");
+                assert!(display.is_none());
                 assert!(!dry_run);
             }
             _ => panic!("Expected Companion Execute"),
