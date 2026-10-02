@@ -56,6 +56,9 @@ mod tests {
 
     #[test]
     fn test_environment_variable_socket_override() {
+        let _guard = crate::ENV_MUTEX.blocking_lock();
+        std::env::remove_var("SYNTROP_RUNTIMED_SOCKET");
+        std::env::remove_var("SYNTROP_ROUTER_SOCKET");
         let ep = DaemonEndpoint::from_name("runtimed").unwrap();
         let default_path = ep.socket_path();
         assert_eq!(

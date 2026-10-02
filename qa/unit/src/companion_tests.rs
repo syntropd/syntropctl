@@ -27,6 +27,7 @@ pub mod tests {
 
     #[tokio::test]
     async fn test_mock_router_multimodal_stream() {
+        let _guard = crate::ENV_MUTEX.lock().await;
         let temp_dir = std::env::temp_dir();
         let sock_path = temp_dir.join(format!("test-router-{}.sock", std::process::id()));
         let _ = std::fs::remove_file(&sock_path);
