@@ -81,13 +81,10 @@ pub async fn discover_ui_element_fast(
     image_base64: &str,
 ) -> Option<Vec<UiAction>> {
     let lower = instruction.trim().to_ascii_lowercase();
-    let target_label = if let Some(stripped) = lower.strip_prefix("click ") {
-        stripped.trim().trim_matches(|c| c == '\'' || c == '"')
-    } else if let Some(stripped) = lower.strip_prefix("find ") {
-        stripped.trim().trim_matches(|c| c == '\'' || c == '"')
-    } else {
-        return None;
-    };
+    let stripped = lower
+        .strip_prefix("click ")
+        .or_else(|| lower.strip_prefix("find "))?;
+    let target_label = stripped.trim().trim_matches(|c| c == '\'' || c == '"');
 
     if target_label.is_empty() {
         return None;
