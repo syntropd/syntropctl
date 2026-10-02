@@ -1,6 +1,6 @@
 {
  "repo": "syntropctl",
- "rev": "da8e24e",
+ "rev": "e63e604",
  "dirty": false,
  "pages": [
   {
@@ -397,7 +397,7 @@
   },
   {
    "path": "./crates/syntropctl-core/src/companion/execute.rs",
-   "lines": 237,
+   "lines": 234,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 3
