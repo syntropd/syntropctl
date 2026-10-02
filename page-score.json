@@ -1,6 +1,6 @@
 {
  "repo": "syntropctl",
- "rev": "e63e604",
+ "rev": "412f2c5",
  "dirty": false,
  "pages": [
   {
@@ -712,7 +712,7 @@
   },
   {
    "path": "./qa/unit/src/companion_tests.rs",
-   "lines": 148,
+   "lines": 197,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 0
