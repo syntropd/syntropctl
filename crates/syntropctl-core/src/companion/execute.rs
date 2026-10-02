@@ -110,7 +110,7 @@ pub async fn discover_ui_element_fast(
     let regions = res.get("regions").and_then(|v| v.as_array())?;
     for region in regions {
         let label = region.get("label").and_then(|v| v.as_str()).unwrap_or("").to_ascii_lowercase();
-        if label.contains(target_label) || target_label.contains(&label) {
+        if !label.is_empty() && (label.contains(target_label) || target_label.contains(&label)) {
             let x1 = region.get("x1").and_then(|v| v.as_u64()).unwrap_or(0) as f32;
             let y1 = region.get("y1").and_then(|v| v.as_u64()).unwrap_or(0) as f32;
             let x2 = region.get("x2").and_then(|v| v.as_u64()).unwrap_or(1000) as f32;

@@ -145,4 +145,53 @@ pub mod tests {
         std::env::remove_var("SYNTROP_SENSORY_SOCKET");
         let _ = std::fs::remove_file(&sock_path);
     }
+
+    #[tokio::test]
+    async fn test_mock_ground_visual_ocr_and_element_discovery() {
+        let temp_dir = std::env::temp_dir();
+        let sock_path = temp_dir.join(format!("test-runtime-{}.sock", std::process::id()));
+        let _ = std::fs::remove_file(&sock_path);
+
+        let listener = UnixListener::bind(&sock_path).expect("bind mock runtime socket");
+        std::env::set_var("SYNTROP_RUNTIME_SOCKET", &sock_path);
+
+        tokio::spawn(async move {
+            while let Ok((mut stream, _)) = listener.accept().await {
+                let mut buf = vec![0u8; 1024];
+                let n = stream.read(&mut buf).await.unwrap_or(0);
+                if n > 0 {
+                    let req_str = String::from_utf8_lossy(&buf[..n]);
+                    let reply = if req_str.contains("<OCR>") {
+                        json!({ "parameters": { "text": "Detected Button Text", "regions": [] } })
+                    } else {
+                        json!({
+                            "parameters": {
+                                "text": "Save: [200, 200, 400, 400]",
+                                "regions": [
+                                    { "label": "", "x1": 0, "y1": 0, "x2": 50, "y2": 50 },
+                                    { "label": "Save", "x1": 200, "y1": 200, "x2": 400, "y2": 400 }
+                                ]
+                            }
+                        })
+                    };
+                    let mut bytes = serde_json::to_vec(&reply).unwrap_or_default();
+                    bytes.push(0x00);
+                    let _ = stream.write_all(&bytes).await;
+                }
+            }
+        });
+
+        let ocr_res = ground_screen_ocr("mock_b64").await;
+        assert_eq!(ocr_res.as_deref(), Some("Detected Button Text"));
+
+        let fast_act = discover_ui_element_fast("click Save", "mock_b64").await;
+        assert!(fast_act.is_some());
+        let acts = fast_act.unwrap();
+        assert_eq!(acts.len(), 2);
+        assert_eq!(acts[0], UiAction::MoveMouse { x: 0.3, y: 0.3 });
+        assert_eq!(acts[1], UiAction::Click { button: 1 });
+
+        std::env::remove_var("SYNTROP_RUNTIME_SOCKET");
+        let _ = std::fs::remove_file(&sock_path);
+    }
 }

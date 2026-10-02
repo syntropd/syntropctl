@@ -11,10 +11,10 @@ pub use actuator::{
     actuator_socket_path, click_mouse, dispatch_action, move_mouse_abs, send_key, type_text,
     ActuatorAction,
 };
-pub use ask::{ask_screen, CompanionAskResult};
+pub use ask::{ask_screen, ground_screen_ocr, CompanionAskResult};
 pub use execute::{
-    execute_instruction, parse_direct_instruction, plan_ui_actions, CompanionExecuteResult,
-    UiAction,
+    discover_ui_element_fast, execute_instruction, parse_direct_instruction, plan_ui_actions,
+    CompanionExecuteResult, UiAction,
 };
 pub use listen::{
     listen_session, listen_session_with_callback, CompanionListenEvent, CompanionListenOptions,
