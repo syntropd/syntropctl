@@ -1,6 +1,6 @@
 {
  "repo": "syntropctl",
- "rev": "13fd681",
+ "rev": "7d59bac",
  "dirty": true,
  "pages": [
   {
@@ -544,7 +544,7 @@
   },
   {
    "path": "./crates/syntropctl-core/src/telemetry/policy.rs",
-   "lines": 72,
+   "lines": 83,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 2

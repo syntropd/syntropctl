@@ -3,14 +3,21 @@
 use super::types::{TuningConfig, TuningOutcome, TuningPolicy};
 use crate::error::SyntropctlError;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 const TUNING_RUN_PATH: &str = "/run/syntrop/tuning.json";
 const TUNING_ETC_PATH: &str = "/etc/syntrop/tuning.json";
 
 /// Returns candidate paths for the tuning configuration file.
 pub fn tuning_config_paths() -> Vec<PathBuf> {
-    vec![PathBuf::from(TUNING_RUN_PATH), PathBuf::from(TUNING_ETC_PATH)]
+    let mut paths = vec![PathBuf::from(TUNING_RUN_PATH), PathBuf::from(TUNING_ETC_PATH)];
+    if let Ok(run_dir) = std::env::var("XDG_RUNTIME_DIR") {
+        paths.push(PathBuf::from(run_dir).join("syntrop/tuning.json"));
+    }
+    if let Ok(home) = std::env::var("HOME") {
+        paths.push(PathBuf::from(home).join(".config/syntrop/tuning.json"));
+    }
+    paths
 }
 
 /// Loads the currently active tuning configuration, defaulting to Balanced if none found.
@@ -34,18 +41,22 @@ pub fn apply_tuning_policy(policy: TuningPolicy) -> Result<TuningOutcome, Syntro
         .map_err(|e| SyntropctlError::OperationFailed(format!("failed to serialize tuning config: {e}")))?;
 
     let mut chosen_path = None;
-    for target in [TUNING_RUN_PATH, TUNING_ETC_PATH] {
-        let p = Path::new(target);
-        if let Some(parent) = p.parent() {
+    for target in tuning_config_paths() {
+        if let Some(parent) = target.parent() {
             let _ = fs::create_dir_all(parent);
         }
-        if fs::write(p, json.as_bytes()).is_ok() {
-            chosen_path = Some(target.to_string());
+        if fs::write(&target, json.as_bytes()).is_ok() {
+            chosen_path = Some(target.to_string_lossy().to_string());
             break;
         }
     }
 
-    let path = chosen_path.unwrap_or_else(|| TUNING_RUN_PATH.to_string());
+    let Some(path) = chosen_path else {
+        return Err(SyntropctlError::OperationFailed(
+            "failed to persist tuning configuration to any candidate path (insufficient permissions)".into(),
+        ));
+    };
+
     Ok(TuningOutcome {
         applied: true,
         path,
@@ -67,6 +78,6 @@ mod tests {
     #[test]
     fn test_candidate_paths() {
         let paths = tuning_config_paths();
-        assert_eq!(paths.len(), 2);
+        assert!(paths.len() >= 2);
     }
 }
