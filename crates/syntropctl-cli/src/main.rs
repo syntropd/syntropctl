@@ -88,6 +88,7 @@ async fn main() -> ExitCode {
         },
         Commands::Admin { command } => handle_admin(command, json).await,
         Commands::Companion { command } => handle_companion(command, json).await,
+        Commands::Telemetry { command } => handle_telemetry(command, json).await,
     };
 
     match res {

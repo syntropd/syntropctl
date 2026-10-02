@@ -9,6 +9,7 @@ pub mod daemon;
 pub mod error;
 pub mod ops;
 pub mod sensory;
+pub mod telemetry;
 pub mod varlink;
 
 pub use companion::{
@@ -32,4 +33,9 @@ pub use sensory::sensory_socket_path;
 pub use sensory::AudioCaptureResult;
 pub use sensory::ImageCaptureResult;
 pub use sensory::OperatorPresenceResult;
+pub use telemetry::{
+    apply_tuning_policy, load_active_tuning_config, query_telemetry_status, PressureMetrics,
+    TelemetryStatusReport, TuningConfig, TuningOutcome, TuningPolicy,
+};
 pub use varlink::VarlinkClient;
+

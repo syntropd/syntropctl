@@ -2,6 +2,7 @@
 
 use crate::cmd::admin::AdminCommands;
 use crate::cmd::companion::CompanionCommands;
+use crate::cmd::telemetry::TelemetryCommands;
 use clap::{Parser, Subcommand};
 use clap_complete::Shell;
 use std::path::PathBuf;
@@ -158,6 +159,12 @@ pub enum Commands {
     Companion {
         #[command(subcommand)]
         command: CompanionCommands,
+    },
+
+    /// Non-blocking kernel telemetry, PSI pressure, and closed-loop tuning governor.
+    Telemetry {
+        #[command(subcommand)]
+        command: TelemetryCommands,
     },
 }
 

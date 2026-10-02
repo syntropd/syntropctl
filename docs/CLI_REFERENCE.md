@@ -80,6 +80,7 @@ syntropctl sensory frame [--device <device>] [--width <px>] [--height <px>] [--o
 
 # Capture screen
 syntropctl sensory screen [--display <display>] [--out <file>]
+```
 
 ### 12. `admin`
 Autonomous OS self-healing, remediation recipes, and circuit breaker management.
@@ -114,3 +115,15 @@ syntropctl companion execute "<instruction>" [--dry-run] [--json]
 # Run daemonized ambient listening session for voice or hotkey triggers
 syntropctl companion listen [--voice] [--hotkey <key>] [--once] [--json]
 ```
+
+### 14. `telemetry`
+Non-blocking kernel telemetry, stack-buffered PSI readers, and dynamic closed-loop tuning governor.
+
+```bash
+# Inspect instantaneous kernel PSI pressure and eBPF runqueue latency
+syntropctl telemetry status [--json]
+
+# Query or apply closed-loop tuning policy (conservative, balanced, aggressive)
+syntropctl telemetry tune [--policy <conservative|balanced|aggressive>] [--json]
+```
+

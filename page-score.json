@@ -1,11 +1,11 @@
 {
  "repo": "syntropctl",
- "rev": "d2dbe7f",
+ "rev": "13fd681",
  "dirty": true,
  "pages": [
   {
    "path": "./crates/syntropctl-cli/src/cli.rs",
-   "lines": 214,
+   "lines": 221,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 6
@@ -159,7 +159,7 @@
   },
   {
    "path": "./crates/syntropctl-cli/src/cmd/mod.rs",
-   "lines": 28,
+   "lines": 31,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 0
@@ -195,6 +195,27 @@
   {
    "path": "./crates/syntropctl-cli/src/cmd/sensory/screen_cmd.rs",
    "lines": 51,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-cli/src/cmd/telemetry/mod.rs",
+   "lines": 45,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 0
+  },
+  {
+   "path": "./crates/syntropctl-cli/src/cmd/telemetry/status_cmd.rs",
+   "lines": 75,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-cli/src/cmd/telemetry/tune_cmd.rs",
+   "lines": 93,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 1
@@ -257,7 +278,7 @@
   },
   {
    "path": "./crates/syntropctl-cli/src/main.rs",
-   "lines": 109,
+   "lines": 110,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 0
@@ -386,11 +407,11 @@
    "lines": 104,
    "bin_bytes": null,
    "heat_pct": null,
-   "reach": 26
+   "reach": 28
   },
   {
    "path": "./crates/syntropctl-core/src/lib.rs",
-   "lines": 35,
+   "lines": 41,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 0
@@ -506,6 +527,34 @@
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-core/src/telemetry/client.rs",
+   "lines": 140,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-core/src/telemetry/mod.rs",
+   "lines": 22,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 0
+  },
+  {
+   "path": "./crates/syntropctl-core/src/telemetry/policy.rs",
+   "lines": 72,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 2
+  },
+  {
+   "path": "./crates/syntropctl-core/src/telemetry/types.rs",
+   "lines": 140,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 3
   },
   {
    "path": "./crates/syntropctl-core/src/varlink/client.rs",
