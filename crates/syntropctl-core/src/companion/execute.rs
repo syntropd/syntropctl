@@ -75,6 +75,62 @@ pub fn parse_direct_instruction(instruction: &str) -> Option<Vec<UiAction>> {
     }
 }
 
+/// Fast sub-50ms UI element discovery via runtimed GroundVisual Varlink RPC.
+pub async fn discover_ui_element_fast(
+    instruction: &str,
+    image_base64: &str,
+) -> Option<Vec<UiAction>> {
+    let lower = instruction.trim().to_ascii_lowercase();
+    let target_label = if let Some(stripped) = lower.strip_prefix("click ") {
+        stripped.trim().trim_matches(|c| c == '\'' || c == '"')
+    } else if let Some(stripped) = lower.strip_prefix("find ") {
+        stripped.trim().trim_matches(|c| c == '\'' || c == '"')
+    } else {
+        return None;
+    };
+
+    if target_label.is_empty() {
+        return None;
+    }
+
+    let sock = std::path::PathBuf::from(
+        std::env::var("SYNTROP_RUNTIME_SOCKET").unwrap_or_else(|_| "/run/syntrop/io.syntrop.Runtime1".into()),
+    );
+    let params = serde_json::json!({
+        "image_bytes": image_base64,
+        "task": "<OCR_WITH_REGION>",
+    });
+
+    let res = crate::varlink::VarlinkClient::call(
+        &sock,
+        "io.syntrop.Runtime1.GroundVisual",
+        Some(params),
+        std::time::Duration::from_millis(150),
+    )
+    .await
+    .ok()?;
+
+    let regions = res.get("regions").and_then(|v| v.as_array())?;
+    for region in regions {
+        let label = region.get("label").and_then(|v| v.as_str()).unwrap_or("").to_ascii_lowercase();
+        if label.contains(target_label) || target_label.contains(&label) {
+            let x1 = region.get("x1").and_then(|v| v.as_u64()).unwrap_or(0) as f32;
+            let y1 = region.get("y1").and_then(|v| v.as_u64()).unwrap_or(0) as f32;
+            let x2 = region.get("x2").and_then(|v| v.as_u64()).unwrap_or(1000) as f32;
+            let y2 = region.get("y2").and_then(|v| v.as_u64()).unwrap_or(1000) as f32;
+
+            let center_x = ((x1 + x2) / 2000.0).clamp(0.0, 1.0);
+            let center_y = ((y1 + y2) / 2000.0).clamp(0.0, 1.0);
+
+            return Some(vec![
+                UiAction::MoveMouse { x: center_x, y: center_y },
+                UiAction::Click { button: 1 },
+            ]);
+        }
+    }
+    None
+}
+
 /// Plan UI actions given desktop screen state and instruction.
 pub async fn plan_ui_actions(
     instruction: &str,
@@ -82,6 +138,10 @@ pub async fn plan_ui_actions(
 ) -> Result<Vec<UiAction>, SyntropctlError> {
     if let Some(direct) = parse_direct_instruction(instruction) {
         return Ok(direct);
+    }
+
+    if let Some(fast_actions) = discover_ui_element_fast(instruction, image_base64).await {
+        return Ok(fast_actions);
     }
 
     let system_prompt = "You are a desktop UI automation planner. Given the user's natural language instruction and current desktop screenshot, output ONLY a valid JSON array of UI actions. Each action must be one of: {\"action\": \"move_mouse\", \"x\": 0.0..1.0, \"y\": 0.0..1.0}, {\"action\": \"click\", \"button\": 1}, {\"action\": \"type_text\", \"text\": \"...\"}, or {\"action\": \"send_key\", \"key_code\": <code>, \"down\": bool}. Do not include markdown code fences.";

@@ -14,6 +14,33 @@ pub struct CompanionAskResult {
     pub display: Option<String>,
 }
 
+/// Fast sub-50ms OCR text discovery via runtimed GroundVisual Varlink RPC.
+pub async fn ground_screen_ocr(image_base64: &str) -> Option<String> {
+    let sock = std::path::PathBuf::from(
+        std::env::var("SYNTROP_RUNTIME_SOCKET").unwrap_or_else(|_| "/run/syntrop/io.syntrop.Runtime1".into()),
+    );
+    let params = serde_json::json!({
+        "image_bytes": image_base64,
+        "task": "<OCR>",
+    });
+
+    let res = crate::varlink::VarlinkClient::call(
+        &sock,
+        "io.syntrop.Runtime1.GroundVisual",
+        Some(params),
+        std::time::Duration::from_millis(150),
+    )
+    .await
+    .ok()?;
+
+    let text = res.get("text").and_then(|t| t.as_str())?;
+    if text.trim().is_empty() {
+        None
+    } else {
+        Some(text.to_string())
+    }
+}
+
 /// Capture the current screen frame and ask a multimodal question grounded in the visual context.
 pub async fn ask_screen(
     prompt: &str,
@@ -21,9 +48,23 @@ pub async fn ask_screen(
 ) -> Result<CompanionAskResult, SyntropctlError> {
     let screen = capture_screen(display).await?;
 
-    let system_instructions = "You are a Linux Cognitive Desktop Companion. Inspect the provided screenshot and answer the user's question accurately with grounded visual references.";
+    let lower = prompt.trim().to_ascii_lowercase();
+    let is_ocr_query = lower.starts_with("ocr")
+        || lower.starts_with("read")
+        || lower.contains("read text")
+        || lower.contains("what text");
 
-    let answer = query_router_multimodal(prompt, &screen.image_base64, Some(system_instructions)).await?;
+    let answer = if is_ocr_query {
+        if let Some(ocr_text) = ground_screen_ocr(&screen.image_base64).await {
+            ocr_text
+        } else {
+            let system_instructions = "You are a Linux Cognitive Desktop Companion. Inspect the provided screenshot and answer the user's question accurately with grounded visual references.";
+            query_router_multimodal(prompt, &screen.image_base64, Some(system_instructions)).await?
+        }
+    } else {
+        let system_instructions = "You are a Linux Cognitive Desktop Companion. Inspect the provided screenshot and answer the user's question accurately with grounded visual references.";
+        query_router_multimodal(prompt, &screen.image_base64, Some(system_instructions)).await?
+    };
 
     Ok(CompanionAskResult {
         prompt: prompt.to_string(),
