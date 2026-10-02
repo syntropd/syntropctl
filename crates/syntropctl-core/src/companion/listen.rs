@@ -57,12 +57,20 @@ where
     loop {
         if options.voice {
             // Sample ambient audio PCM and query operator presence VAD
-            let _ = capture_audio(Some(300), Some(16000)).await;
+            let audio_opt = capture_audio(Some(300), Some(16000)).await.ok();
             if let Ok(presence) = get_operator_presence().await {
                 if presence.present && presence.confidence > 0.5 {
+                    let desc = if let Some(ref a) = audio_opt {
+                        match crate::ops::inference::transcribe_audio(&a.audio_pcm_base64, Some("en")).await {
+                            Ok(t) if !t.text.is_empty() => format!("Transcribed: \"{}\"", t.text),
+                            _ => format!("Operator speech activity: {}", presence.reason),
+                        }
+                    } else {
+                        format!("Operator speech activity: {}", presence.reason)
+                    };
                     let ev = CompanionListenEvent {
                         trigger_type: "voice".to_string(),
-                        description: format!("Operator speech activity: {}", presence.reason),
+                        description: desc,
                         active: true,
                         timestamp_ms: current_timestamp_ms(),
                     };

@@ -2,7 +2,10 @@
 
 use clap::Parser;
 use std::process::ExitCode;
-use syntropctl_cli::cli::{Cli, Commands, SensoryCommands, VisualCommands};
+use syntropctl_cli::cli::{Cli, Commands, SensoryCommands};
+use syntropctl_cli::cmd::audio::AudioCommands;
+use syntropctl_cli::cmd::video::VideoCommands;
+use syntropctl_cli::cmd::visual::VisualCommands;
 use syntropctl_cli::cmd::*;
 
 #[tokio::main]
@@ -89,6 +92,15 @@ async fn main() -> ExitCode {
         Commands::Admin { command } => handle_admin(command, json).await,
         Commands::Companion { command } => handle_companion(command, json).await,
         Commands::Telemetry { command } => handle_telemetry(command, json).await,
+        Commands::Audio { command } => match command {
+            AudioCommands::Generate {
+                prompt,
+                duration,
+                bpm,
+            } => handle_audio_generate(&prompt, duration, bpm, json)
+                .await
+                .map(|_| ExitCode::SUCCESS),
+        },
         Commands::Visual { command } => match command {
             VisualCommands::Generate {
                 prompt,
@@ -104,6 +116,13 @@ async fn main() -> ExitCode {
             )
             .await
             .map(|_| ExitCode::SUCCESS),
+        },
+        Commands::Video { command } => match command {
+            VideoCommands::Generate { prompt, frames, fps } => {
+                handle_video_generate(&prompt, frames, fps, json)
+                    .await
+                    .map(|_| ExitCode::SUCCESS)
+            }
         },
     };
 

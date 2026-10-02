@@ -1,11 +1,11 @@
 {
  "repo": "syntropctl",
- "rev": "f5145ff",
+ "rev": "c641fa9",
  "dirty": true,
  "pages": [
   {
    "path": "./crates/syntropctl-cli/src/cli.rs",
-   "lines": 249,
+   "lines": 242,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 6
@@ -51,6 +51,20 @@
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-cli/src/cmd/audio/generate.rs",
+   "lines": 39,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-cli/src/cmd/audio/mod.rs",
+   "lines": 24,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 0
   },
   {
    "path": "./crates/syntropctl-cli/src/cmd/companion/ask_cmd.rs",
@@ -159,7 +173,7 @@
   },
   {
    "path": "./crates/syntropctl-cli/src/cmd/mod.rs",
-   "lines": 32,
+   "lines": 36,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 0
@@ -256,15 +270,29 @@
    "reach": 2
   },
   {
+   "path": "./crates/syntropctl-cli/src/cmd/video/generate.rs",
+   "lines": 40,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-cli/src/cmd/video/mod.rs",
+   "lines": 24,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 0
+  },
+  {
    "path": "./crates/syntropctl-cli/src/cmd/visual/generate.rs",
    "lines": 61,
    "bin_bytes": null,
    "heat_pct": null,
-   "reach": 3
+   "reach": 1
   },
   {
    "path": "./crates/syntropctl-cli/src/cmd/visual/mod.rs",
-   "lines": 5,
+   "lines": 28,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 0
@@ -292,7 +320,7 @@
   },
   {
    "path": "./crates/syntropctl-cli/src/main.rs",
-   "lines": 126,
+   "lines": 145,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 0
@@ -376,7 +404,7 @@
   },
   {
    "path": "./crates/syntropctl-core/src/companion/listen.rs",
-   "lines": 110,
+   "lines": 118,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 2
@@ -421,7 +449,7 @@
    "lines": 104,
    "bin_bytes": null,
    "heat_pct": null,
-   "reach": 28
+   "reach": 31
   },
   {
    "path": "./crates/syntropctl-core/src/lib.rs",
@@ -473,8 +501,36 @@
    "reach": 3
   },
   {
-   "path": "./crates/syntropctl-core/src/ops/inference.rs",
-   "lines": 228,
+   "path": "./crates/syntropctl-core/src/ops/inference/audio.rs",
+   "lines": 140,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 1
+  },
+  {
+   "path": "./crates/syntropctl-core/src/ops/inference/mod.rs",
+   "lines": 37,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 0
+  },
+  {
+   "path": "./crates/syntropctl-core/src/ops/inference/text.rs",
+   "lines": 174,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 3
+  },
+  {
+   "path": "./crates/syntropctl-core/src/ops/inference/video.rs",
+   "lines": 72,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 5
+  },
+  {
+   "path": "./crates/syntropctl-core/src/ops/inference/visual.rs",
+   "lines": 96,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 1
@@ -488,7 +544,7 @@
   },
   {
    "path": "./crates/syntropctl-core/src/ops/mod.rs",
-   "lines": 22,
+   "lines": 26,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 0
@@ -512,7 +568,7 @@
    "lines": 71,
    "bin_bytes": null,
    "heat_pct": null,
-   "reach": 5
+   "reach": 1
   },
   {
    "path": "./crates/syntropctl-core/src/sensory/endpoint.rs",
@@ -540,7 +596,7 @@
    "lines": 122,
    "bin_bytes": null,
    "heat_pct": null,
-   "reach": 3
+   "reach": 1
   },
   {
    "path": "./crates/syntropctl-core/src/telemetry/client.rs",
