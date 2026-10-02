@@ -1,11 +1,11 @@
 {
  "repo": "syntropctl",
- "rev": "3bd8adc",
- "dirty": false,
+ "rev": "2b73866",
+ "dirty": true,
  "pages": [
   {
    "path": "./crates/syntropctl-cli/src/cli.rs",
-   "lines": 221,
+   "lines": 249,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 6
@@ -159,7 +159,7 @@
   },
   {
    "path": "./crates/syntropctl-cli/src/cmd/mod.rs",
-   "lines": 31,
+   "lines": 32,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 0
@@ -256,6 +256,20 @@
    "reach": 2
   },
   {
+   "path": "./crates/syntropctl-cli/src/cmd/visual/generate.rs",
+   "lines": 56,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 3
+  },
+  {
+   "path": "./crates/syntropctl-cli/src/cmd/visual/mod.rs",
+   "lines": 5,
+   "bin_bytes": null,
+   "heat_pct": null,
+   "reach": 0
+  },
+  {
    "path": "./crates/syntropctl-cli/src/format/mod.rs",
    "lines": 11,
    "bin_bytes": null,
@@ -278,7 +292,7 @@
   },
   {
    "path": "./crates/syntropctl-cli/src/main.rs",
-   "lines": 110,
+   "lines": 126,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 0
@@ -460,7 +474,7 @@
   },
   {
    "path": "./crates/syntropctl-core/src/ops/inference.rs",
-   "lines": 177,
+   "lines": 228,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 1
@@ -526,7 +540,7 @@
    "lines": 122,
    "bin_bytes": null,
    "heat_pct": null,
-   "reach": 1
+   "reach": 3
   },
   {
    "path": "./crates/syntropctl-core/src/telemetry/client.rs",

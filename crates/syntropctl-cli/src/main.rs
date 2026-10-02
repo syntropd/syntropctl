@@ -2,7 +2,7 @@
 
 use clap::Parser;
 use std::process::ExitCode;
-use syntropctl_cli::cli::{Cli, Commands, SensoryCommands};
+use syntropctl_cli::cli::{Cli, Commands, SensoryCommands, VisualCommands};
 use syntropctl_cli::cmd::*;
 
 #[tokio::main]
@@ -89,6 +89,22 @@ async fn main() -> ExitCode {
         Commands::Admin { command } => handle_admin(command, json).await,
         Commands::Companion { command } => handle_companion(command, json).await,
         Commands::Telemetry { command } => handle_telemetry(command, json).await,
+        Commands::Visual { command } => match command {
+            VisualCommands::Generate {
+                prompt,
+                model,
+                lora,
+                size,
+            } => handle_visual_generate(
+                &prompt,
+                model.as_deref(),
+                lora.as_deref(),
+                size.as_deref(),
+                json,
+            )
+            .await
+            .map(|_| ExitCode::SUCCESS),
+        },
     };
 
     match res {
