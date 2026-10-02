@@ -32,6 +32,13 @@ pub async fn generate_visual(
     if trimmed.is_empty() {
         return Err(SyntropctlError::OperationFailed("prompt cannot be empty".into()));
     }
+    if let Some(sb) = storyboard {
+        if sb == 0 {
+            return Err(SyntropctlError::OperationFailed(
+                "storyboard keyframe count must be greater than 0".into(),
+            ));
+        }
+    }
 
     let runtimed_ep = DaemonEndpoint::from_name("runtimed")
         .ok_or_else(|| SyntropctlError::NotFound("runtimed endpoint not configured".into()))?;
@@ -131,5 +138,12 @@ mod tests {
         };
         assert_eq!(out.width, 512);
         assert_eq!(out.height, 512);
+    }
+
+    #[tokio::test]
+    async fn test_generate_visual_zero_storyboard() {
+        let res = generate_visual("test", None, &[], 512, 512, Some(0), false).await;
+        assert!(res.is_err());
+        assert!(res.unwrap_err().to_string().contains("storyboard keyframe count must be greater than 0"));
     }
 }

@@ -27,6 +27,11 @@ pub async fn handle_video_generate(
             anyhow::bail!("fps must be greater than 0");
         }
     }
+    if let Some(sb) = storyboard {
+        if sb == 0 {
+            anyhow::bail!("storyboard keyframe count must be greater than 0");
+        }
+    }
 
     let frame_count = frames.unwrap_or(16);
     let frame_rate = fps.unwrap_or(8);
@@ -67,5 +72,9 @@ mod tests {
         let res_zero_fps = handle_video_generate("ocean", Some(16), Some(0), None, false, false).await;
         assert!(res_zero_fps.is_err());
         assert!(res_zero_fps.unwrap_err().to_string().contains("fps must be greater than 0"));
+
+        let res_zero_sb = handle_video_generate("ocean", Some(16), Some(8), Some(0), false, false).await;
+        assert!(res_zero_sb.is_err());
+        assert!(res_zero_sb.unwrap_err().to_string().contains("storyboard keyframe count must be greater than 0"));
     }
 }

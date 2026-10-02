@@ -18,6 +18,11 @@ pub async fn handle_visual_generate(
     if trimmed.is_empty() {
         anyhow::bail!("prompt cannot be empty");
     }
+    if let Some(sb) = storyboard {
+        if sb == 0 {
+            anyhow::bail!("storyboard keyframe count must be greater than 0");
+        }
+    }
     let (width, height) = parse_dimensions(size)?;
     let loras = lora.map(|l| vec![l.to_string()]).unwrap_or_default();
 
@@ -77,5 +82,16 @@ mod tests {
         assert_eq!(parse_dimensions(None).unwrap(), (512, 512));
         assert!(parse_dimensions(Some("bad")).is_err());
         assert!(parse_dimensions(Some("9999x9999")).is_err());
+    }
+
+    #[tokio::test]
+    async fn test_visual_generate_validation() {
+        let res_empty = handle_visual_generate("  ", None, None, None, None, false, false).await;
+        assert!(res_empty.is_err());
+        assert!(res_empty.unwrap_err().to_string().contains("prompt cannot be empty"));
+
+        let res_zero_sb = handle_visual_generate("city", None, None, None, Some(0), false, false).await;
+        assert!(res_zero_sb.is_err());
+        assert!(res_zero_sb.unwrap_err().to_string().contains("storyboard keyframe count must be greater than 0"));
     }
 }

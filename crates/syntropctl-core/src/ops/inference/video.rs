@@ -35,6 +35,13 @@ pub async fn generate_video(
     if fps == 0 {
         return Err(SyntropctlError::OperationFailed("fps must be greater than 0".into()));
     }
+    if let Some(sb) = storyboard {
+        if sb == 0 {
+            return Err(SyntropctlError::OperationFailed(
+                "storyboard keyframe count must be greater than 0".into(),
+            ));
+        }
+    }
 
     let runtimed_ep = DaemonEndpoint::from_name("runtimed")
         .ok_or_else(|| SyntropctlError::NotFound("runtimed endpoint not configured".into()))?;
@@ -116,5 +123,12 @@ mod tests {
         };
         assert_eq!(vid.frames, 16);
         assert_eq!(vid.duration_ms, 2000);
+    }
+
+    #[tokio::test]
+    async fn test_generate_video_zero_storyboard() {
+        let res = generate_video("test", 16, 8, Some(0), false).await;
+        assert!(res.is_err());
+        assert!(res.unwrap_err().to_string().contains("storyboard keyframe count must be greater than 0"));
     }
 }
