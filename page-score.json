@@ -1,6 +1,6 @@
 {
  "repo": "syntropctl",
- "rev": "06a0330",
+ "rev": "98c44d1",
  "dirty": true,
  "pages": [
   {
@@ -425,7 +425,7 @@
   },
   {
    "path": "./crates/syntropctl-core/src/companion/safety.rs",
-   "lines": 237,
+   "lines": 251,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 3

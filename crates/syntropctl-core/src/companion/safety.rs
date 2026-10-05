@@ -17,33 +17,37 @@ pub fn is_virtual_actuator_name(name: &str) -> bool {
 
 /// Inspect sysfs to check if an evdev node belongs to a virtual actuator.
 pub fn is_virtual_input_node(node_name: &str) -> bool {
-    let sys_name = format!("/sys/class/input/{}/device/name", node_name);
-    if let Ok(content) = std::fs::read_to_string(&sys_name) {
-        if is_virtual_actuator_name(&content) {
-            return true;
-        }
+    let sys_name = format!("/sys/class/input/{node_name}/device/name");
+    if std::fs::read_to_string(&sys_name).map(|c| is_virtual_actuator_name(&c)).unwrap_or(false) {
+        return true;
     }
-    let sys_path = format!("/sys/class/input/{}", node_name);
-    if let Ok(canon) = std::fs::canonicalize(&sys_path) {
-        if canon.to_string_lossy().contains("/devices/virtual/") {
-            return true;
-        }
-    }
-    false
+    let sys_path = format!("/sys/class/input/{node_name}");
+    std::fs::canonicalize(&sys_path)
+        .map(|p| p.to_string_lossy().contains("/devices/virtual/"))
+        .unwrap_or(false)
 }
 
 /// Identifies if a process name, command, or window title represents an elevated auth prompter.
 pub fn is_elevated_auth_name(name: &str) -> bool {
     let lower = name.to_ascii_lowercase();
     let trimmed = lower.trim();
+    if trimmed == "polkitd" || trimmed.starts_with("polkitd ") {
+        return false;
+    }
     trimmed == "sudo"
         || trimmed == "pkexec"
         || trimmed == "doas"
         || trimmed == "su"
-        || trimmed.contains("polkit")
+        || trimmed.contains("polkit-agent")
+        || trimmed.contains("polkit-gnome")
+        || trimmed.contains("polkit-kde")
+        || trimmed.contains("polkit-mate")
+        || trimmed.contains("lxpolkit")
         || trimmed.contains("pinentry")
         || trimmed.contains("gcr-prompter")
         || trimmed.contains("authentication-agent")
+        || trimmed.contains("authentication required")
+        || trimmed.contains("authenticate")
 }
 
 /// Inspects the active desktop window for elevated authentication dialog focus (X11 / Wayland).
@@ -69,6 +73,13 @@ pub fn inspect_active_window_auth() -> bool {
             }
         }
     }
+    if std::env::var_os("HYPRLAND_INSTANCE_SIGNATURE").is_some() {
+        if let Ok(w) = Command::new("hyprctl").arg("activewindow").output() {
+            if w.status.success() && is_elevated_auth_name(&String::from_utf8_lossy(&w.stdout)) {
+                return true;
+            }
+        }
+    }
     false
 }
 
@@ -85,15 +96,17 @@ pub fn inspect_proc_elevated_auth() -> bool {
         let pid_path = entry.path();
         if let Ok(comm) = std::fs::read_to_string(pid_path.join("comm")) {
             let comm_trim = comm.trim();
+            if comm_trim == "polkitd" {
+                continue;
+            }
             if is_elevated_auth_name(comm_trim) {
-                if comm_trim.contains("polkit")
-                    || comm_trim.contains("pkexec")
+                if comm_trim.starts_with("polkit-agent")
                     || comm_trim.contains("pinentry")
                     || comm_trim.contains("gcr-prompter")
                 {
                     return true;
                 }
-                if comm_trim == "sudo" || comm_trim == "doas" || comm_trim == "su" {
+                if comm_trim == "sudo" || comm_trim == "doas" || comm_trim == "su" || comm_trim == "pkexec" {
                     if let Ok(stat) = std::fs::read_to_string(pid_path.join("stat")) {
                         if let Some(after_paren) = stat.rfind(')') {
                             let fields: Vec<&str> = stat[after_paren + 1..].split_whitespace().collect();
@@ -215,16 +228,17 @@ mod tests {
 
     #[test]
     fn test_is_elevated_auth_name() {
-        assert!(is_elevated_auth_name("polkit-gnome-authentication-agent-1"));
-        assert!(is_elevated_auth_name("pkexec"));
-        assert!(is_elevated_auth_name("sudo"));
-        assert!(is_elevated_auth_name("pinentry-curses"));
-        assert!(!is_elevated_auth_name("firefox"));
-        assert!(!is_elevated_auth_name("alacritty"));
+        for n in &["polkit-gnome-agent", "pkexec", "sudo", "pinentry", "Authenticate", "Authentication Required"] {
+            assert!(is_elevated_auth_name(n), "should match: {n}");
+        }
+        for n in &["firefox", "alacritty", "polkitd", "bash"] {
+            assert!(!is_elevated_auth_name(n), "should not match: {n}");
+        }
     }
 
     #[test]
     fn test_elevated_auth_simulation_flag() {
+        assert!(!inspect_proc_elevated_auth());
         std::env::remove_var("SYNTROP_SIMULATE_ELEVATED_AUTH");
         std::env::set_var("SYNTROP_DISABLE_ELEVATED_AUTH_CHECK", "1");
         assert!(!check_elevated_auth_focus());
