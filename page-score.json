@@ -1,7 +1,7 @@
 {
  "repo": "syntropctl",
- "rev": "89e7708",
- "dirty": true,
+ "rev": "c949a3a",
+ "dirty": false,
  "pages": [
   {
    "path": "./crates/syntropctl-cli/src/cli.rs",
