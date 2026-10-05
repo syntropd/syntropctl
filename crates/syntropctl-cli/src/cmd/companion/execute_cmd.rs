@@ -8,6 +8,7 @@ pub async fn handle_execute(
     instruction: &str,
     display: Option<&str>,
     dry_run: bool,
+    grounding: bool,
     as_json: bool,
 ) -> Result<()> {
     let result = execute_instruction(instruction, display, dry_run).await?;
@@ -17,6 +18,13 @@ pub async fn handle_execute(
     } else {
         println!("Instruction: {}", result.instruction);
         println!("Planned Actions: {}", result.actions.len());
+        for action in &result.actions {
+            if let syntropctl_core::companion::UiAction::MoveMouse { x, y } = action {
+                if grounding {
+                    println!("Grounded UI Target: [x: {:.3}, y: {:.3}]", x, y);
+                }
+            }
+        }
         println!("Executed Actions: {}", result.executed_count);
         if result.aborted {
             println!(

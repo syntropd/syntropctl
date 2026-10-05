@@ -137,6 +137,15 @@ pub async fn plan_ui_actions(
         return Ok(direct);
     }
 
+    let lower = instruction.trim().to_ascii_lowercase();
+    if lower.starts_with("click ") || lower.starts_with("tap ") {
+        if let Ok(raw) = base64::Engine::decode(&base64::engine::general_purpose::STANDARD, image_base64) {
+            if let Ok(Some((x, y))) = super::grounding::ground_ui_element(instruction, &raw).await {
+                return Ok(vec![UiAction::MoveMouse { x, y }, UiAction::Click { button: 1 }]);
+            }
+        }
+    }
+
     if let Some(fast_actions) = discover_ui_element_fast(instruction, image_base64).await {
         return Ok(fast_actions);
     }

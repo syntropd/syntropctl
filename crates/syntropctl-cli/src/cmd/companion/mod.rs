@@ -3,10 +3,12 @@
 pub mod ask_cmd;
 pub mod execute_cmd;
 pub mod listen_cmd;
+pub mod talk_cmd;
 
 pub use ask_cmd::handle_ask;
 pub use execute_cmd::handle_execute;
 pub use listen_cmd::handle_listen;
+pub use talk_cmd::handle_talk;
 
 use clap::Subcommand;
 use std::process::ExitCode;
@@ -36,6 +38,10 @@ pub enum CompanionCommands {
         /// Validate and preview action plan without emitting hardware actuator events.
         #[arg(long = "dry-run")]
         dry_run: bool,
+
+        /// Enable visual grounding for semantic UI targeting.
+        #[arg(long = "grounding", default_value_t = true)]
+        grounding: bool,
     },
 
     /// Daemonized session listening for voice triggers or hotkey chords.
@@ -52,6 +58,21 @@ pub enum CompanionCommands {
         #[arg(long = "once")]
         once: bool,
     },
+
+    /// Full-duplex conversational voice loop: PipeWire VAD -> Whisper STT -> LLM -> Kokoro TTS.
+    Talk {
+        /// LLM reasoning model to route conversational queries to.
+        #[arg(long = "model")]
+        model: Option<String>,
+
+        /// Voice persona identifier for Kokoro TTS audio synthesis.
+        #[arg(long = "voice")]
+        voice: Option<String>,
+
+        /// Run a single conversational exchange and exit.
+        #[arg(long = "once")]
+        once: bool,
+    },
 }
 
 /// Dispatches all `syn companion` / `syntropctl companion` subcommands.
@@ -65,12 +86,17 @@ pub async fn handle_companion(command: CompanionCommands, json: bool) -> anyhow:
             instruction,
             display,
             dry_run,
+            grounding,
         } => {
-            handle_execute(&instruction, display.as_deref(), dry_run, json).await?;
+            handle_execute(&instruction, display.as_deref(), dry_run, grounding, json).await?;
             Ok(ExitCode::SUCCESS)
         }
         CompanionCommands::Listen { voice, hotkey, once } => {
             handle_listen(voice, hotkey.as_deref(), once, json).await?;
+            Ok(ExitCode::SUCCESS)
+        }
+        CompanionCommands::Talk { model, voice, once } => {
+            handle_talk(model.as_deref(), voice.as_deref(), once, json).await?;
             Ok(ExitCode::SUCCESS)
         }
     }

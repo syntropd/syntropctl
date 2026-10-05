@@ -75,11 +75,13 @@ mod tests {
                         instruction,
                         display,
                         dry_run,
+                        grounding,
                     },
             } => {
                 assert_eq!(instruction, "type hello world");
                 assert!(display.is_none());
                 assert!(!dry_run);
+                assert!(grounding);
             }
             _ => panic!("Expected Companion Execute"),
         }
