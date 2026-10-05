@@ -53,16 +53,20 @@ pub fn parse_direct_instruction(instruction: &str) -> Option<Vec<UiAction>> {
             Some(vec![UiAction::MoveMouse { x, y }])
         }
         "click" => {
-            let btn = if tokens.len() >= 2 {
-                tokens[1].parse::<u16>().unwrap_or(1)
+            if tokens.len() == 1 {
+                Some(vec![UiAction::Click { button: 1 }])
+            } else if tokens.len() == 2 {
+                tokens[1].parse::<u16>().ok().map(|btn| vec![UiAction::Click { button: btn }])
+            } else if tokens.len() == 3 {
+                let x = tokens[1].parse::<f32>().ok()?;
+                let y = tokens[2].parse::<f32>().ok()?;
+                Some(vec![UiAction::MoveMouse { x, y }, UiAction::Click { button: 1 }])
             } else {
-                1
-            };
-            Some(vec![UiAction::Click { button: btn }])
+                None
+            }
         }
         "type" if tokens.len() >= 2 => {
-            let text = trimmed[4..].trim_start().to_string();
-            Some(vec![UiAction::TypeText { text }])
+            Some(vec![UiAction::TypeText { text: trimmed[4..].trim_start().to_string() }])
         }
         "key" if tokens.len() >= 2 => {
             let code = tokens[1].parse::<u16>().ok()?;
@@ -115,60 +119,57 @@ pub async fn discover_ui_element_fast(
             let y1 = region.get("y1").and_then(|v| v.as_u64()).unwrap_or(0) as f32;
             let x2 = region.get("x2").and_then(|v| v.as_u64()).unwrap_or(1000) as f32;
             let y2 = region.get("y2").and_then(|v| v.as_u64()).unwrap_or(1000) as f32;
-
-            let center_x = ((x1 + x2) / 2000.0).clamp(0.0, 1.0);
-            let center_y = ((y1 + y2) / 2000.0).clamp(0.0, 1.0);
-
-            return Some(vec![
-                UiAction::MoveMouse { x: center_x, y: center_y },
-                UiAction::Click { button: 1 },
-            ]);
+            let cx = ((x1 + x2) / 2000.0).clamp(0.0, 1.0);
+            let cy = ((y1 + y2) / 2000.0).clamp(0.0, 1.0);
+            return Some(vec![UiAction::MoveMouse { x: cx, y: cy }, UiAction::Click { button: 1 }]);
         }
     }
     None
 }
 
 /// Plan UI actions given desktop screen state and instruction.
-pub async fn plan_ui_actions(
-    instruction: &str,
-    image_base64: &str,
+pub async fn plan_ui_actions(instruction: &str, image_base64: &str) -> Result<Vec<UiAction>, SyntropctlError> {
+    plan_ui_actions_with_grounding(instruction, image_base64, true).await
+}
+
+/// Plan UI actions with explicit grounding toggle.
+pub async fn plan_ui_actions_with_grounding(
+    instruction: &str, image_base64: &str, grounding: bool,
 ) -> Result<Vec<UiAction>, SyntropctlError> {
     if let Some(direct) = parse_direct_instruction(instruction) {
         return Ok(direct);
     }
-
-    let lower = instruction.trim().to_ascii_lowercase();
-    if lower.starts_with("click ") || lower.starts_with("tap ") {
-        if let Ok(raw) = base64::Engine::decode(&base64::engine::general_purpose::STANDARD, image_base64) {
-            if let Ok(Some((x, y))) = super::grounding::ground_ui_element(instruction, &raw).await {
-                return Ok(vec![UiAction::MoveMouse { x, y }, UiAction::Click { button: 1 }]);
+    if grounding {
+        let lower = instruction.trim().to_ascii_lowercase();
+        if lower.starts_with("click ") || lower.starts_with("tap ") {
+            if let Ok(raw) = base64::Engine::decode(&base64::engine::general_purpose::STANDARD, image_base64) {
+                if let Ok(Some((x, y))) = super::grounding::ground_ui_element(instruction, &raw).await {
+                    return Ok(vec![UiAction::MoveMouse { x, y }, UiAction::Click { button: 1 }]);
+                }
             }
         }
+        if let Some(fast_actions) = discover_ui_element_fast(instruction, image_base64).await {
+            return Ok(fast_actions);
+        }
     }
-
-    if let Some(fast_actions) = discover_ui_element_fast(instruction, image_base64).await {
-        return Ok(fast_actions);
-    }
-
-    let system_prompt = "You are a desktop UI automation planner. Given the user's natural language instruction and current desktop screenshot, output ONLY a valid JSON array of UI actions. Each action must be one of: {\"action\": \"move_mouse\", \"x\": 0.0..1.0, \"y\": 0.0..1.0}, {\"action\": \"click\", \"button\": 1}, {\"action\": \"type_text\", \"text\": \"...\"}, or {\"action\": \"send_key\", \"key_code\": <code>, \"down\": bool}. Do not include markdown code fences.";
-
+    let sys = "You are a desktop UI automation planner. Given screenshot and instruction, output ONLY JSON array of UI actions: [{\"action\": \"move_mouse\", \"x\": 0.0..1.0, \"y\": 0.0..1.0}, {\"action\": \"click\", \"button\": 1}]. No markdown fences.";
     let prompt = format!("Plan UI actions for instruction: {}", instruction);
-    let reply = query_router_multimodal(&prompt, image_base64, Some(system_prompt)).await?;
-
+    let reply = query_router_multimodal(&prompt, image_base64, Some(sys)).await?;
     let cleaned = reply.trim().trim_start_matches("```json").trim_start_matches("```").trim_end_matches("```").trim();
     match serde_json::from_str::<Vec<UiAction>>(cleaned) {
         Ok(acts) if !acts.is_empty() => Ok(acts),
-        _ => Err(SyntropctlError::MalformedReply(format!(
-            "Failed to parse valid UI actions array from router completion: {reply}"
-        ))),
+        _ => Err(SyntropctlError::MalformedReply(format!("Failed to parse UI actions from router: {reply}"))),
     }
 }
 
 /// Execute natural language instruction by planning actions, dispatching via Actuator1, and validating visual state.
-pub async fn execute_instruction(
-    instruction: &str,
-    display: Option<&str>,
-    dry_run: bool,
+pub async fn execute_instruction(instruction: &str, display: Option<&str>, dry_run: bool) -> Result<CompanionExecuteResult, SyntropctlError> {
+    execute_instruction_with_grounding(instruction, display, dry_run, true).await
+}
+
+/// Execute natural language instruction with explicit grounding toggle.
+pub async fn execute_instruction_with_grounding(
+    instruction: &str, display: Option<&str>, dry_run: bool, grounding: bool,
 ) -> Result<CompanionExecuteResult, SyntropctlError> {
     let initial_screen = capture_screen(display).await;
     let (actions, initial_captured) = if let Some(direct) = parse_direct_instruction(instruction) {
@@ -176,7 +177,7 @@ pub async fn execute_instruction(
         (direct, captured)
     } else {
         let screen = initial_screen?;
-        (plan_ui_actions(instruction, &screen.image_base64).await?, true)
+        (plan_ui_actions_with_grounding(instruction, &screen.image_base64, grounding).await?, true)
     };
 
     let mut executed_count = 0;
@@ -237,6 +238,9 @@ mod tests {
         let acts = parse_direct_instruction("click 2").unwrap();
         assert_eq!(acts.len(), 1);
         assert_eq!(acts[0], UiAction::Click { button: 2 });
+        assert!(parse_direct_instruction("click Save").is_none());
+        let xy = parse_direct_instruction("click 0.5 0.5").unwrap();
+        assert_eq!(xy.len(), 2);
     }
 
     #[test]

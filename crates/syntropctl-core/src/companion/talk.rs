@@ -57,15 +57,19 @@ where
             reason: "no activity".into(),
         });
 
+        let has_audio_energy = audio_opt.as_ref().is_some_and(|a| {
+            a.raw_bytes.as_chunks::<2>().0.iter().any(|&c| i16::from_le_bytes(c).abs() > 400)
+        });
+
         // Barge-in check: new speech or physical user input immediately halts ongoing playback
-        if (presence.present || super::safety::check_physical_user_input())
+        if (presence.present || has_audio_energy || super::safety::check_physical_user_input())
             && active_playback.load(Ordering::SeqCst)
         {
             let _ = Command::new("pkill").args(["-f", "pw-cat"]).status();
             active_playback.store(false, Ordering::SeqCst);
         }
 
-        if presence.present && presence.confidence > 0.45 {
+        if (presence.present && presence.confidence > 0.45) || has_audio_energy {
             if let Some(ref a) = audio_opt {
                 // 2. Transcribe via local Whisper STT
                 if let Ok(stt) = crate::ops::inference::transcribe_audio(&a.audio_pcm_base64, Some("en")).await {
@@ -98,9 +102,6 @@ where
         }
 
         tokio::time::sleep(Duration::from_millis(40)).await;
-        if options.once && presence.present {
-            break;
-        }
     }
     Ok(())
 }

@@ -1,7 +1,7 @@
 //! UI macro execution and visual validation CLI command.
 
 use anyhow::Result;
-use syntropctl_core::companion::execute_instruction;
+use syntropctl_core::companion::execute_instruction_with_grounding;
 
 /// Execute `companion execute "<instruction>"` CLI command.
 pub async fn handle_execute(
@@ -11,7 +11,7 @@ pub async fn handle_execute(
     grounding: bool,
     as_json: bool,
 ) -> Result<()> {
-    let result = execute_instruction(instruction, display, dry_run).await?;
+    let result = execute_instruction_with_grounding(instruction, display, dry_run, grounding).await?;
 
     if as_json {
         println!("{}", serde_json::to_string_pretty(&result)?);

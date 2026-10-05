@@ -1,7 +1,7 @@
 {
  "repo": "syntropctl",
- "rev": "2e0cf17",
- "dirty": false,
+ "rev": "89e7708",
+ "dirty": true,
  "pages": [
   {
    "path": "./crates/syntropctl-cli/src/cli.rs",
@@ -404,7 +404,7 @@
   },
   {
    "path": "./crates/syntropctl-core/src/companion/execute.rs",
-   "lines": 248,
+   "lines": 252,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 4
@@ -414,7 +414,7 @@
    "lines": 96,
    "bin_bytes": null,
    "heat_pct": null,
-   "reach": 2
+   "reach": 3
   },
   {
    "path": "./crates/syntropctl-core/src/companion/listen.rs",
@@ -425,7 +425,7 @@
   },
   {
    "path": "./crates/syntropctl-core/src/companion/mod.rs",
-   "lines": 30,
+   "lines": 31,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 0
@@ -453,7 +453,7 @@
   },
   {
    "path": "./crates/syntropctl-core/src/companion/talk.rs",
-   "lines": 130,
+   "lines": 131,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 2
@@ -481,7 +481,7 @@
   },
   {
    "path": "./crates/syntropctl-core/src/lib.rs",
-   "lines": 42,
+   "lines": 43,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 0

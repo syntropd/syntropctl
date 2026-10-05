@@ -13,8 +13,9 @@ pub mod telemetry;
 pub mod varlink;
 
 pub use companion::{
-    ask_screen, click_mouse, execute_instruction, ground_ui_element, listen_session,
-    listen_session_with_callback, move_mouse_abs, run_talk_session, send_key, type_text,
+    ask_screen, click_mouse, execute_instruction, execute_instruction_with_grounding,
+    ground_ui_element, listen_session, listen_session_with_callback, move_mouse_abs,
+    plan_ui_actions_with_grounding, run_talk_session, send_key, type_text,
     ActuatorAction, CompanionAskResult, CompanionExecuteResult, CompanionListenEvent,
     CompanionListenOptions, TalkOptions, TalkTranscriptEvent, UiAction,
 };

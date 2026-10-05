@@ -15,7 +15,8 @@ pub use actuator::{
 };
 pub use ask::{ask_screen, ground_screen_ocr, CompanionAskResult};
 pub use execute::{
-    discover_ui_element_fast, execute_instruction, parse_direct_instruction, plan_ui_actions,
+    discover_ui_element_fast, execute_instruction, execute_instruction_with_grounding,
+    parse_direct_instruction, plan_ui_actions, plan_ui_actions_with_grounding,
     CompanionExecuteResult, UiAction,
 };
 pub use grounding::{ground_ui_element, parse_grounding_response, GroundedElement};
