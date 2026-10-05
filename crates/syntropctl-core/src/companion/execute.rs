@@ -2,7 +2,7 @@
 
 use super::actuator::{click_mouse, move_mouse_abs, send_key, type_text};
 use super::router_stream::query_router_multimodal;
-use super::safety::check_physical_user_input;
+use super::safety::{check_elevated_auth_focus, check_physical_user_input};
 use crate::error::SyntropctlError;
 use crate::sensory::capture_screen;
 use serde::{Deserialize, Serialize};
@@ -178,6 +178,11 @@ pub async fn execute_instruction(
         if check_physical_user_input() {
             aborted = true;
             abort_reason = Some("Physical user input detected; aborting macro".to_string());
+            break;
+        }
+        if check_elevated_auth_focus() {
+            aborted = true;
+            abort_reason = Some("Elevated authentication dialog has focus; aborting actuation".to_string());
             break;
         }
 

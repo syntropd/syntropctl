@@ -80,6 +80,11 @@ pub async fn click_mouse(button: u16) -> Result<(), SyntropctlError> {
 
 /// Dispatch a generic ActuatorAction enum variant.
 pub async fn dispatch_action(action: &ActuatorAction) -> Result<(), SyntropctlError> {
+    if super::safety::check_elevated_auth_focus() {
+        return Err(SyntropctlError::OperationFailed(
+            "Actuation suppressed: elevated authentication dialog has focus".to_string(),
+        ));
+    }
     match action {
         ActuatorAction::MoveMouse { x, y } => move_mouse_abs(*x, *y).await,
         ActuatorAction::Click { button } => click_mouse(*button).await,

@@ -105,8 +105,11 @@ pub mod tests {
         let _ = std::fs::remove_file(&sock_path);
     }
 
+    static ENV_MUTEX: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
+
     #[tokio::test]
     async fn test_companion_execute_safety_abort() {
+        let _lock = ENV_MUTEX.lock().await;
         std::env::set_var("SYNTROP_SIMULATE_PHYSICAL_INPUT", "1");
 
         let temp_dir = std::env::temp_dir();
@@ -142,6 +145,48 @@ pub mod tests {
         assert!(res.abort_reason.unwrap().contains("Physical user input"));
 
         std::env::remove_var("SYNTROP_SIMULATE_PHYSICAL_INPUT");
+        std::env::remove_var("SYNTROP_SENSORY_SOCKET");
+        let _ = std::fs::remove_file(&sock_path);
+    }
+
+    #[tokio::test]
+    async fn test_companion_execute_elevated_auth_abort() {
+        let _lock = ENV_MUTEX.lock().await;
+        std::env::set_var("SYNTROP_SIMULATE_ELEVATED_AUTH", "1");
+
+        let temp_dir = std::env::temp_dir();
+        let sock_path = temp_dir.join(format!("test-sensory-auth-{}.sock", std::process::id()));
+        let _ = std::fs::remove_file(&sock_path);
+
+        let listener = UnixListener::bind(&sock_path).expect("bind mock sensory socket");
+        std::env::set_var("SYNTROP_SENSORY_SOCKET", &sock_path);
+
+        tokio::spawn(async move {
+            while let Ok((mut stream, _)) = listener.accept().await {
+                let mut buf = vec![0u8; 1024];
+                let n = stream.read(&mut buf).await.unwrap_or(0);
+                if n > 0 {
+                    let reply = json!({
+                        "parameters": {
+                            "image_base64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNiAAAABgADNjd8qAAAAABJRU5ErkJggg==",
+                            "format": "png"
+                        }
+                    });
+                    let mut bytes = serde_json::to_vec(&reply).unwrap_or_default();
+                    bytes.push(0x00);
+                    let _ = stream.write_all(&bytes).await;
+                }
+            }
+        });
+
+        let res = execute_instruction("click 0.5 0.5", None, false)
+            .await
+            .expect("execute should succeed with abort state");
+        assert!(res.aborted);
+        assert_eq!(res.executed_count, 0);
+        assert!(res.abort_reason.unwrap().contains("Elevated authentication"));
+
+        std::env::remove_var("SYNTROP_SIMULATE_ELEVATED_AUTH");
         std::env::remove_var("SYNTROP_SENSORY_SOCKET");
         let _ = std::fs::remove_file(&sock_path);
     }

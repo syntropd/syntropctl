@@ -23,4 +23,4 @@ pub use router_stream::{
     parse_http_completion_response, query_router_multimodal, router_socket_path,
     MULTIMODAL_ROUTER_TIMEOUT,
 };
-pub use safety::check_physical_user_input;
+pub use safety::{check_elevated_auth_focus, check_physical_user_input};

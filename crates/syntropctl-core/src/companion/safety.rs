@@ -4,6 +4,7 @@ use rustix::event::{poll, PollFd, PollFlags};
 use rustix::fd::AsFd;
 use rustix::fs::{open, Mode, OFlags};
 use std::path::Path;
+use std::process::Command;
 use std::time::{Duration, SystemTime};
 
 /// Check whether an input device name belongs to a virtual actuator.
@@ -31,11 +32,105 @@ pub fn is_virtual_input_node(node_name: &str) -> bool {
     false
 }
 
+/// Identifies if a process name, command, or window title represents an elevated auth prompter.
+pub fn is_elevated_auth_name(name: &str) -> bool {
+    let lower = name.to_ascii_lowercase();
+    let trimmed = lower.trim();
+    trimmed == "sudo"
+        || trimmed == "pkexec"
+        || trimmed == "doas"
+        || trimmed == "su"
+        || trimmed.contains("polkit")
+        || trimmed.contains("pinentry")
+        || trimmed.contains("gcr-prompter")
+        || trimmed.contains("authentication-agent")
+}
+
+/// Inspects the active desktop window for elevated authentication dialog focus (X11 / Wayland).
+pub fn inspect_active_window_auth() -> bool {
+    if std::env::var_os("DISPLAY").is_none() && std::env::var_os("WAYLAND_DISPLAY").is_none() {
+        return false;
+    }
+    if let Ok(output) = Command::new("xprop").args(["-root", "_NET_ACTIVE_WINDOW"]).output() {
+        if output.status.success() {
+            let out_str = String::from_utf8_lossy(&output.stdout);
+            if let Some(id_part) = out_str.split('#').nth(1) {
+                let win_id = id_part.split_whitespace().next().unwrap_or("");
+                if !win_id.is_empty() && win_id != "0x0" {
+                    if let Ok(w_out) = Command::new("xprop")
+                        .args(["-id", win_id, "WM_CLASS", "_NET_WM_NAME", "WM_NAME"])
+                        .output()
+                    {
+                        if w_out.status.success() && is_elevated_auth_name(&String::from_utf8_lossy(&w_out.stdout)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    false
+}
+
+/// Inspects `/proc` to detect running elevated authentication prompters or foreground sudo processes.
+pub fn inspect_proc_elevated_auth() -> bool {
+    let Ok(entries) = std::fs::read_dir("/proc") else {
+        return false;
+    };
+    for entry in entries.flatten() {
+        let name_str = entry.file_name().to_string_lossy().to_string();
+        if !name_str.chars().all(|c| c.is_ascii_digit()) {
+            continue;
+        }
+        let pid_path = entry.path();
+        if let Ok(comm) = std::fs::read_to_string(pid_path.join("comm")) {
+            let comm_trim = comm.trim();
+            if is_elevated_auth_name(comm_trim) {
+                if comm_trim.contains("polkit")
+                    || comm_trim.contains("pkexec")
+                    || comm_trim.contains("pinentry")
+                    || comm_trim.contains("gcr-prompter")
+                {
+                    return true;
+                }
+                if comm_trim == "sudo" || comm_trim == "doas" || comm_trim == "su" {
+                    if let Ok(stat) = std::fs::read_to_string(pid_path.join("stat")) {
+                        if let Some(after_paren) = stat.rfind(')') {
+                            let fields: Vec<&str> = stat[after_paren + 1..].split_whitespace().collect();
+                            if fields.len() >= 6 {
+                                let pgrp = fields[2];
+                                let tty_nr = fields[4].parse::<i32>().unwrap_or(0);
+                                let tpgid = fields[5];
+                                if tty_nr > 0 && pgrp == tpgid && tpgid != "-1" {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    false
+}
+
+/// Checks whether an elevated authentication prompt (Polkit, pkexec, or sudo) has focus.
+pub fn check_elevated_auth_focus() -> bool {
+    if let Ok(sim) = std::env::var("SYNTROP_SIMULATE_ELEVATED_AUTH") {
+        if sim == "1" || sim.eq_ignore_ascii_case("true") {
+            return true;
+        }
+    }
+    if std::env::var("SYNTROP_DISABLE_ELEVATED_AUTH_CHECK").is_ok() {
+        return false;
+    }
+    if inspect_active_window_auth() {
+        return true;
+    }
+    inspect_proc_elevated_auth()
+}
+
 /// Check whether physical user input has occurred.
-///
-/// Returns true if physical user activity is detected, signaling
-/// that any automated macro playback must abort immediately to avoid
-/// fighting the human operator for desktop focus or control.
 pub fn check_physical_user_input() -> bool {
     if let Ok(sim) = std::env::var("SYNTROP_SIMULATE_PHYSICAL_INPUT") {
         if sim == "1" || sim.eq_ignore_ascii_case("true") {
@@ -45,28 +140,24 @@ pub fn check_physical_user_input() -> bool {
     if std::env::var("SYNTROP_DISABLE_PHYSICAL_INPUT_CHECK").is_ok() {
         return false;
     }
-
     if let Ok(entries) = std::fs::read_dir("/dev/input") {
         let threshold = Duration::from_millis(500);
         let now = SystemTime::now();
-
         for entry in entries.flatten() {
-            let path = entry.path();
             let file_name = entry.file_name();
             let name_str = file_name.to_string_lossy();
             if (name_str.starts_with("event") || name_str.starts_with("mouse"))
                 && !is_virtual_input_node(&name_str)
             {
-                if has_pending_input_event(&path) {
+                if has_pending_input_event(&entry.path()) {
                     return true;
                 }
-                if is_recent_input(&path, now, threshold) {
+                if is_recent_input(&entry.path(), now, threshold) {
                     return true;
                 }
             }
         }
     }
-
     false
 }
 
@@ -103,10 +194,8 @@ mod tests {
     fn test_simulate_physical_input_flag() {
         std::env::remove_var("SYNTROP_SIMULATE_PHYSICAL_INPUT");
         assert!(!check_physical_user_input());
-
         std::env::set_var("SYNTROP_SIMULATE_PHYSICAL_INPUT", "1");
         assert!(check_physical_user_input());
-
         std::env::remove_var("SYNTROP_SIMULATE_PHYSICAL_INPUT");
     }
 
@@ -122,5 +211,27 @@ mod tests {
         assert!(is_virtual_actuator_name("syntrop-virtual-actuator"));
         assert!(is_virtual_actuator_name("uinput-syntrop"));
         assert!(!is_virtual_actuator_name("AT Translated Set 2 keyboard"));
+    }
+
+    #[test]
+    fn test_is_elevated_auth_name() {
+        assert!(is_elevated_auth_name("polkit-gnome-authentication-agent-1"));
+        assert!(is_elevated_auth_name("pkexec"));
+        assert!(is_elevated_auth_name("sudo"));
+        assert!(is_elevated_auth_name("pinentry-curses"));
+        assert!(!is_elevated_auth_name("firefox"));
+        assert!(!is_elevated_auth_name("alacritty"));
+    }
+
+    #[test]
+    fn test_elevated_auth_simulation_flag() {
+        std::env::remove_var("SYNTROP_SIMULATE_ELEVATED_AUTH");
+        std::env::set_var("SYNTROP_DISABLE_ELEVATED_AUTH_CHECK", "1");
+        assert!(!check_elevated_auth_focus());
+        std::env::remove_var("SYNTROP_DISABLE_ELEVATED_AUTH_CHECK");
+
+        std::env::set_var("SYNTROP_SIMULATE_ELEVATED_AUTH", "1");
+        assert!(check_elevated_auth_focus());
+        std::env::remove_var("SYNTROP_SIMULATE_ELEVATED_AUTH");
     }
 }

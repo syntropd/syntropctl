@@ -1,7 +1,7 @@
 {
  "repo": "syntropctl",
- "rev": "5f435c9",
- "dirty": false,
+ "rev": "06a0330",
+ "dirty": true,
  "pages": [
   {
    "path": "./crates/syntropctl-cli/src/cli.rs",
@@ -383,7 +383,7 @@
   },
   {
    "path": "./crates/syntropctl-core/src/companion/actuator.rs",
-   "lines": 112,
+   "lines": 117,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 2
@@ -397,7 +397,7 @@
   },
   {
    "path": "./crates/syntropctl-core/src/companion/execute.rs",
-   "lines": 234,
+   "lines": 239,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 3
@@ -425,10 +425,10 @@
   },
   {
    "path": "./crates/syntropctl-core/src/companion/safety.rs",
-   "lines": 126,
+   "lines": 237,
    "bin_bytes": null,
    "heat_pct": null,
-   "reach": 2
+   "reach": 3
   },
   {
    "path": "./crates/syntropctl-core/src/daemon/endpoint.rs",
@@ -712,7 +712,7 @@
   },
   {
    "path": "./qa/unit/src/companion_tests.rs",
-   "lines": 197,
+   "lines": 242,
    "bin_bytes": null,
    "heat_pct": null,
    "reach": 0
